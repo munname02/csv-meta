@@ -918,6 +918,79 @@ body:not(.light-mode) .result-copy-btn{
   font-weight:800;
   flex-shrink:0;
 }
+
+.result-card .result-ip-risk{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  padding:4px 7px;
+  border-radius:10px;
+  background:#5b1116;
+  color:#ffb5b9;
+  border:1px solid #d92d3a;
+  font-size:8px;
+  font-weight:900;
+  flex-shrink:0;
+  box-shadow:0 0 0 1px rgba(217,45,58,.12);
+  animation:csvnestIpPulse 1.8s ease-in-out infinite;
+}
+.result-card .result-ip-check{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  padding:4px 7px;
+  border-radius:10px;
+  background:#4a3510;
+  color:#ffd98a;
+  border:1px solid #b7791f;
+  font-size:8px;
+  font-weight:900;
+  flex-shrink:0;
+}
+@keyframes csvnestIpPulse{
+  0%,100%{box-shadow:0 0 0 1px rgba(217,45,58,.12);}
+  50%{box-shadow:0 0 0 3px rgba(217,45,58,.16);}
+}
+.ip-risk-reason{
+  margin:7px 0 0;
+  padding:7px 9px;
+  border-radius:7px;
+  background:#2a1114;
+  border:1px solid #6f252c;
+  color:#ffb5b9;
+  font-size:8px;
+  line-height:1.45;
+}
+.ip-check-reason{
+  margin:7px 0 0;
+  padding:7px 9px;
+  border-radius:7px;
+  background:#2b2414;
+  border:1px solid #6d5320;
+  color:#f7d68e;
+  font-size:8px;
+  line-height:1.45;
+}
+body.light-mode .result-card .result-ip-risk{
+  background:#fff0f1;
+  color:#b4232d;
+  border-color:#d92d3a;
+}
+body.light-mode .result-card .result-ip-check{
+  background:#fff8e6;
+  color:#8a5b00;
+  border-color:#d6a23a;
+}
+body.light-mode .ip-risk-reason{
+  background:#fff4f4;
+  border-color:#f1a4aa;
+  color:#9d2028;
+}
+body.light-mode .ip-check-reason{
+  background:#fff9ec;
+  border-color:#e4c77f;
+  color:#7a5a12;
+}
 body:not(.light-mode) .result-card .result-complete{
   background:#1d392f;
   color:#74e0bf;
@@ -1993,7 +2066,7 @@ window.CSVNestEPS = {
 
             <div class="csvnest-mf-card" id="keywordSettings">
               <div class="csvnest-mf-card-head csvnest-mf-collapse" data-collapse="keywordSettingsBody">
-                <h3>🏷 Keyword Settings <span class="csvnest-mf-active">ACTIVE</span></h3>
+                <h3>🏷 Keyword Settings <span class="csvnest-mf-active">ACTIVE</span><span class="csvnest-mf-active" title="High-confidence third-party IP metadata filter">IP SAFE</span></h3>
                 <span class="csvnest-mf-chev" id="keywordSettingsChev">⌃</span>
               </div>
               <div class="csvnest-mf-body" id="keywordSettingsBody">
@@ -2373,6 +2446,69 @@ window.CSVNestEPS = {
       return chars.trim();
     }
 
+    /* ===== Adobe Stock IP / metadata safety filter =====
+       This is a high-confidence metadata filter only. It cannot determine
+       copyright ownership or guarantee acceptance; it removes/flags explicit
+       third-party-IP references and style-attribution language before export.
+    */
+    const CSVNEST_IP_BLOCK_PATTERNS = [
+      /\b(?:in\s+the\s+style\s+of|inspired\s+by|influenced\s+by|in\s+the\s+tradition\s+of|drawing\s+on|based\s+on|after\s+the\s+style\s+of)\b/gi,
+      /\b(?:fan\s*art|fan\s*made|official\s+merch|official\s+art|licensed\s+character|copyrighted\s+(?:art|design|character|work))\b/gi,
+      /\b(?:trademark|registered\s+trademark|brand\s+name|company\s+name|logo|wordmark)\b/gi,
+      /\b(?:disney|pixar|marvel|dc\s+comics|warner\s+bros|universal\s+studios|dreamworks|nintendo|pokemon|pok[eé]mon|sanrio|hello\s+kitty|star\s+wars|harry\s+potter|lord\s+of\s+the\s+rings|game\s+of\s+thrones|minecraft|fortnite|barbie|lego|coca[-\s]?cola|pepsi|nike|adidas|apple|microsoft|google|amazon)\b/gi,
+      /\b(?:spider[-\s]?man|batman|superman|wonder\s+woman|iron\s+man|captain\s+america|hulk|thor|pikachu|mickey\s+mouse|minnie\s+mouse|elsa|olaf|frozen\s+character|sponge[bob]*\s+squarepants)\b/gi,
+      /\b(?:banksy|yayoi\s+kusama|takashi\s+murakami|van\s+gogh|picasso|monet|warhol|da\s+vinci|dali|chihuly)\b/gi,
+      /\b(?:government\s+agency|white\s+house|nasa|fbi|cia|who|united\s+nations)\b/gi
+    ];
+
+    const CSVNEST_IP_BLOCK_WORDS = new Set([
+      "trademark", "copyrighted", "licensed", "official", "fanart", "fan-art"
+    ]);
+
+    function csvnestCleanMetadataText(value) {
+      let text = String(value || "");
+      CSVNEST_IP_BLOCK_PATTERNS.forEach(re => { text = text.replace(re, " "); });
+      return text.replace(/\s{2,}/g, " ").replace(/\s+([,.;:])/g, "$1").trim();
+    }
+
+    function csvnestIsHighRiskKeyword(keyword) {
+      const raw = String(keyword || "").trim();
+      if (!raw) return true;
+      const normalized = raw.toLowerCase().replace(/[“”"']/g, "").replace(/\s+/g, " ").trim();
+      if (CSVNEST_IP_BLOCK_WORDS.has(normalized)) return true;
+      return CSVNEST_IP_BLOCK_PATTERNS.some(re => {
+        re.lastIndex = 0;
+        return re.test(normalized);
+      });
+    }
+
+    function csvnestSanitizeKeywords(keywords) {
+      const seen = new Set();
+      return (Array.isArray(keywords) ? keywords : [])
+        .map(k => String(k || "").replace(/\s+/g, " ").trim())
+        .filter(k => k && !csvnestIsHighRiskKeyword(k))
+        .filter(k => {
+          const key = k.toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+    }
+
+    function csvnestMetadataSafetyFilter(result) {
+      if (!result) return result;
+
+      result.title = csvnestCleanMetadataText(result.title);
+      result.description = csvnestCleanMetadataText(result.description);
+      result.keywords = csvnestSanitizeKeywords(result.keywords);
+
+      // Remove punctuation left behind by deleted phrases and normalize spaces.
+      result.title = result.title.replace(/\s*[,;:|]+\s*$/g, "").trim();
+      result.description = result.description.replace(/\s*[,;:|]+\s*$/g, "").trim();
+
+      return result;
+    }
+
     function enforceCsvnestMetadataLimits(result) {
       if (!result) return result;
 
@@ -2418,12 +2554,21 @@ window.CSVNestEPS = {
             .map(k => k.trim())
             .filter(Boolean);
 
-      return {
+      const rawIpDetected = data.ipRiskDetected ?? data.ipRisk?.detected ?? false;
+      const ipRiskDetected = rawIpDetected === true || String(rawIpDetected).toLowerCase() === "true";
+      const ipRiskConfidence = String(data.ipRiskConfidence ?? data.ipRisk?.confidence ?? "").toLowerCase().trim();
+      const ipRiskReason = String(data.ipRiskReason ?? data.ipRisk?.reason ?? "").replace(/\s+/g, " ").trim();
+
+      const result = {
         fileName: file.name,
         title: data.title || "",
         description: data.description || "",
-        keywords
+        keywords,
+        ipRiskDetected,
+        ipRiskConfidence,
+        ipRiskReason
       };
+      return csvnestMetadataSafetyFilter(result);
     }
 
     async function generateMetadataForFile(file, apiKey, settings) {
@@ -2499,12 +2644,23 @@ Requirements:
 - Do NOT omit the requested before/after text. It will also be applied by the app after generation.
 - Category preference: ${category}.
 - Extra metadata instruction: ${instruction || "(none)"}.
+- STRICT IP SAFETY: Do not include company/brand names, logos, trademarks, artist names, real known people, fictional character names, movie/franchise/comic/art/design names, government agencies, or references to third-party intellectual property.
+- Never use phrases such as "in the style of", "inspired by", "influenced by", "in the tradition of", "drawing on", "based on", "fan art", "official", "licensed", or "copyrighted".
+- Use only generic, factual, visually observable stock descriptors. If a possible IP reference is uncertain, OMIT it rather than guessing.
+- The image itself may still contain IP; metadata filtering cannot guarantee legal clearance.
+- BEFORE writing metadata, perform a separate visual IP check on the uploaded artwork. Flag only visible, specific evidence such as a recognizable brand/logo/trademark, a recognizable fictional character or franchise asset, a clearly identifiable artist/copyrighted artwork, or another clearly identifiable third-party IP element. Do NOT flag generic subjects, common cartoon styles, generic ghosts/animals/objects, ordinary shapes, common decorative patterns, or merely because an image looks professionally designed.
+- Set ipRiskDetected to true ONLY when there is concrete visible evidence of possible third-party IP in the artwork itself. If there is no such evidence, set it to false. If evidence is ambiguous but worth human review, set it to true and use confidence "low" or "medium".
+- ipRiskReason must briefly explain the visible reason without inventing an owner or legal conclusion. Example: "Visible brand logo on the cap." Do not say that something is legally copyrighted unless the visual evidence supports only a possible risk.
+- ipRiskConfidence must be one of: "high", "medium", "low", or "none".
 - Avoid trademarks, celebrity names, unsupported claims, and irrelevant keywords.
 - Return JSON only with this exact structure:
 {
   "title": "string",
   "description": "string",
-  "keywords": ["keyword 1", "keyword 2"]
+  "keywords": ["keyword 1", "keyword 2"],
+  "ipRiskDetected": false,
+  "ipRiskConfidence": "none",
+  "ipRiskReason": ""
 }
 `;
 
@@ -2572,6 +2728,7 @@ Requirements:
 
       const result = normalizeResult(text, file);
       result.title = decorateCsvnestTitle(result.title);
+      csvnestMetadataSafetyFilter(result);
       enforceCsvnestMetadataLimits(result);
       return result;
     }
@@ -2585,7 +2742,10 @@ Requirements:
     }
 
     function renderGeneratedResults(results) {
-      results.forEach(enforceCsvnestMetadataLimits);
+      results.forEach(result => {
+        csvnestMetadataSafetyFilter(result);
+        enforceCsvnestMetadataLimits(result);
+      });
       emptyState.style.display = "none";
       preview.classList.add("show");
 
@@ -2635,8 +2795,13 @@ Requirements:
           <div class="result-card" data-result-index="${index}">
             <div class="result-file-head">
               <div class="result-file-name">▧ &nbsp; ${escapeHtml(result.fileName)}</div>
-              <span class="result-complete">COMPLETE</span>
+              ${result.ipRiskDetected
+                ? `<span class="result-ip-risk" title="Possible third-party IP detected in the artwork">⚠ IP RISK</span>`
+                : `<span class="result-complete">COMPLETE</span>`}
             </div>
+            ${result.ipRiskDetected
+              ? `<div class="${String(result.ipRiskConfidence).toLowerCase() === "low" ? "ip-check-reason" : "ip-risk-reason"}"><strong>⚠ Possible IP / Trademark Problem:</strong> ${escapeHtml(result.ipRiskReason || "Visible element may require an IP/trademark review.")}</div>`
+              : ""}
 
             <div class="result-layout">
               <div class="result-preview" aria-label="Preview of ${escapeHtml(result.fileName)}">
