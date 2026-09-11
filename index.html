@@ -320,6 +320,117 @@
       font-weight: 600;
     }
 
+    /* ===== Platforms: top of upload area ===== */
+    .csvnest-platform-top-card{
+      margin-bottom:12px;
+      padding:12px;
+      background:linear-gradient(145deg,#151919,#111414);
+      border:1px solid #292e2e;
+      border-radius:13px;
+      box-shadow:0 12px 35px rgba(0,0,0,.16);
+      overflow:hidden;
+    }
+    .csvnest-platform-top-card .csvnest-profile-platforms{
+      margin:0;
+      padding:0 0 10px;
+      border-bottom:1px solid #303735;
+    }
+    .csvnest-platform-top-card .csvnest-profile-platforms-title{
+      margin:0 0 10px;
+      text-align:center;
+      color:var(--green);
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:2px;
+    }
+    .csvnest-platform-top-card .csvnest-profile-platform-grid{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:6px;
+    }
+    .csvnest-platform-top-card .csvnest-profile-platform-grid .platform{
+      flex:0 0 auto;
+    }
+
+    /* ===== Profile platform picker ===== */
+    .csvnest-profile-platforms{
+      margin:0 0 14px;
+      padding:0 0 14px;
+      border-bottom:1px solid #303735;
+    }
+    .csvnest-profile-platforms-title{
+      margin:0 0 10px;
+      text-align:center;
+      color:var(--green);
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:2px;
+    }
+    .csvnest-profile-platform-grid{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:6px;
+    }
+    .csvnest-profile-platform-grid .platform{
+      flex:0 0 auto;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      min-height:36px;
+      padding:7px 12px;
+      border:1px solid #35403f;
+      border-radius:18px;
+      background:#111617;
+      color:#aeb8b5;
+      font-size:10px;
+      font-weight:700;
+      line-height:1;
+      transition:.18s ease;
+    }
+    .csvnest-profile-platform-grid .platform:hover{
+      color:#e9f2ef;
+      border-color:#596866;
+      background:#192020;
+      transform:translateY(-1px);
+    }
+    .csvnest-profile-platform-grid .platform.selected{
+      color:#f4ffff;
+      background:#152426;
+      border-color:var(--green);
+      box-shadow:0 0 0 1px rgba(85,214,178,.15),0 0 16px rgba(85,214,178,.12);
+    }
+    .csvnest-profile-platform-grid .platform .platform-dot{
+      width:12px;
+      height:12px;
+      flex:0 0 12px;
+      border:2px solid currentColor;
+      border-radius:4px;
+      opacity:.95;
+    }
+    .csvnest-profile-platform-grid .platform[data-value="Adobe Stock"] .platform-dot{border-radius:50%;}
+    .csvnest-profile-platform-grid .platform[data-value="Magnific"] .platform-dot{border-radius:3px;transform:rotate(45deg);}
+    .csvnest-profile-platform-grid .platform[data-value="Shutterstock"] .platform-dot{border-radius:50%;}
+    .csvnest-profile-platform-grid .platform[data-value="Vecteezy"] .platform-dot{border-radius:2px;transform:rotate(45deg);}
+    .csvnest-profile-platform-grid .platform[data-value="Depositphotos"] .platform-dot{border-radius:50%;}
+    .csvnest-profile-platform-grid .platform[data-value="123RF"] .platform-dot{border-radius:4px;}
+    .csvnest-profile-platform-grid .platform[data-value="Dreamstime"] .platform-dot{border-radius:50%;}
+    .csvnest-profile-platform-grid .platform[data-value="Freepik"] .platform-dot{border-radius:4px;}
+    .csvnest-profile-platform-grid .platform[data-value="iStock"] .platform-dot{border-radius:2px;}
+    .csvnest-profile-select-hidden{
+      position:absolute !important;
+      width:1px !important;
+      height:1px !important;
+      padding:0 !important;
+      margin:-1px !important;
+      overflow:hidden !important;
+      clip:rect(0,0,0,0) !important;
+      white-space:nowrap !important;
+      border:0 !important;
+    }
+
     .range-info {
       display: flex;
       justify-content: space-between;
@@ -554,6 +665,24 @@
       font-size:11px;
     }
     .upload-file-remove:hover{filter:brightness(1.12)}
+.upload-file-actions{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      flex:0 0 auto;
+    }
+    .upload-file-generate{
+      padding:6px 9px;
+      border-radius:6px;
+      background:#e7eeea;
+      color:#17211e;
+      border:1px solid #d7e0db;
+      font-size:8px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .upload-file-generate:hover{filter:brightness(1.08)}
+    .upload-file-generate:disabled{opacity:.6;cursor:wait}
     body.light-mode .upload-file-row{
       background:#f4f6f8;
       color:#344054;
@@ -2129,14 +2258,7 @@ window.CSVNestEPS = {
             </div>
 
             <div class="csvnest-mf-card csvnest-mf-extra">
-              <label for="profile">Profile</label>
-              <select id="profile">
-                <option>Adobe Stock</option>
-                <option>Shutterstock</option>
-                <option>Getty / iStock</option>
-                <option>Freepik</option>
-                <option>Universal</option>
-              </select>
+
 
               <label for="category">Category</label>
               <select id="category">
@@ -2171,6 +2293,30 @@ window.CSVNestEPS = {
 </section>
 
         <section class="right-column">
+          <div class="csvnest-platform-top-card">
+              <div class="csvnest-profile-platforms" aria-label="Marketplace profile">
+                <div class="csvnest-profile-platforms-title">PLATFORMS</div>
+                <div class="csvnest-profile-platform-grid" id="profilePlatformGrid">
+                  <button type="button" class="platform selected" data-value="General"><span class="platform-dot"></span>General</button>
+                  <button type="button" class="platform" data-value="Adobe Stock"><span class="platform-dot">St</span>AdobeStock</button>
+                  <button type="button" class="platform" data-value="Magnific"><span class="platform-dot"></span>Magnific</button>
+                  <button type="button" class="platform" data-value="Shutterstock"><span class="platform-dot"></span>Shutterstock</button>
+                  <button type="button" class="platform" data-value="Vecteezy"><span class="platform-dot"></span>Vecteezy</button>
+                </div>
+              </div>
+              <select id="profile" class="csvnest-profile-select-hidden" aria-hidden="true" tabindex="-1">
+                <option>General</option>
+                <option>Adobe Stock</option>
+                <option>Magnific</option>
+                <option>Shutterstock</option>
+                <option>Vecteezy</option>
+                <option>Depositphotos</option>
+                <option>123RF</option>
+                <option>Dreamstime</option>
+                <option>Freepik</option>
+                <option>iStock</option>
+              </select>
+          </div>
           <div class="card upload-card">
             <div class="card-header">
               <div>⇧ &nbsp; Upload Files</div>
@@ -2335,7 +2481,10 @@ window.CSVNestEPS = {
               ${isCsvnestEPS(file) ? "Preparing EPS preview…" : "Preparing preview…"}
             </div>
           </div>
-          <button type="button" class="upload-file-remove" onclick="removeFile(${index})" aria-label="Remove file">×</button>
+          <div class="upload-file-actions">
+            <button type="button" class="upload-file-generate" data-upload-generate="${index}" aria-label="Generate metadata for ${escapeHtml(file.name)}">✦ Generate</button>
+            <button type="button" class="upload-file-remove" onclick="removeFile(${index})" aria-label="Remove file">×</button>
+          </div>
         </div>
       `).join("");
 
@@ -2343,6 +2492,11 @@ window.CSVNestEPS = {
       // without waiting for Generate All.
       selectedFiles.forEach((file, index) => {
         prepareCsvnestUploadPreview(file, index);
+      });
+
+      fileList.querySelectorAll("[data-upload-generate]").forEach(button => {
+        const index = Number(button.getAttribute("data-upload-generate"));
+        button.addEventListener("click", () => generateSingleUploadedFile(index, button));
       });
     }
 
@@ -2353,8 +2507,13 @@ window.CSVNestEPS = {
         delete file.__csvnestPreviewUrl;
       }
       delete file?.__csvnestPreviewFile;
+      const removedName = file?.name;
       selectedFiles.splice(index, 1);
+      if (removedName) {
+        generatedResults = generatedResults.filter(result => result && result.fileName !== removedName);
+      }
       renderFiles();
+      if (generatedResults.length) renderGeneratedResults(generatedResults);
     }
 
     function formatSize(bytes) {
@@ -2372,6 +2531,7 @@ window.CSVNestEPS = {
         delete file?.__csvnestPreviewFile;
       });
       selectedFiles = [];
+      generatedResults = [];
       fileInput.value = "";
       renderFiles();
     });
@@ -2518,7 +2678,40 @@ window.CSVNestEPS = {
       const kwMax = Number(csvnestMetadataRules?.kwMax || 0);
 
       if (titleMax > 0) {
-        result.title = trimToMaxCharacters(result.title, titleMax);
+        // Preserve the user's Before/After Title text when enforcing the maximum.
+        // Only shorten the AI-generated middle portion so custom title text is
+        // never cut off from the beginning or end.
+        syncCsvnestMetaSettings();
+        const before = String(csvnestAdvancedSettings?.beforeTitle || "").trim();
+        const after = String(csvnestAdvancedSettings?.afterTitle || "").trim();
+
+        if (before || after) {
+          const prefix = before ? before + " " : "";
+          const suffix = after ? " " + after : "";
+          const prefixLen = prefix.length;
+          const suffixLen = suffix.length;
+
+          if (prefixLen + suffixLen < titleMax) {
+            let core = String(result.title || "").trim();
+
+            const hasPrefix = before &&
+              core.toLowerCase().startsWith(prefix.toLowerCase());
+            const hasSuffix = after &&
+              core.toLowerCase().endsWith(suffix.toLowerCase());
+
+            if (hasPrefix) core = core.slice(prefixLen).trim();
+            if (hasSuffix) core = core.slice(0, Math.max(0, core.length - suffixLen)).trim();
+
+            const availableCore = Math.max(1, titleMax - prefixLen - suffixLen);
+            core = trimToMaxCharacters(core, availableCore);
+
+            result.title = (prefix + core + suffix).replace(/\s+/g, " ").trim();
+          } else {
+            result.title = trimToMaxCharacters(result.title, titleMax);
+          }
+        } else {
+          result.title = trimToMaxCharacters(result.title, titleMax);
+        }
       }
 
       if (descMax > 0) {
@@ -2749,7 +2942,11 @@ Requirements:
       emptyState.style.display = "none";
       preview.classList.add("show");
 
-      const generatedHtml = results.map((result, index) => {
+      const displayResults = selectedFiles
+        .map(file => results.find(result => result && result.fileName === file.name))
+        .filter(Boolean);
+
+      const generatedHtml = displayResults.map((result, index) => {
         const titleCount = [...String(result.title || "")].length;
         const descCount = [...String(result.description || "")].length;
         const kwCount = Array.isArray(result.keywords) ? result.keywords.length : 0;
@@ -2767,9 +2964,7 @@ Requirements:
         const descOver = descCount > rules.descMax || descCount < rules.descMin;
         const kwOver = kwCount > rules.kwMax || kwCount < rules.kwMin;
 
-        const sourceFile =
-          selectedFiles[index] ||
-          selectedFiles.find(f => f.name === result.fileName);
+        const sourceFile = selectedFiles.find(f => f.name === result.fileName);
 
         // For EPS, use the PNG rendered during metadata generation.
         // For normal images, use the original uploaded file.
@@ -2887,8 +3082,11 @@ Requirements:
       // Keep files that are still waiting for generation visible below the
       // completed results. Previously this container was replaced with only
       // completed results, which made the remaining uploaded files disappear.
-      const pendingHtml = selectedFiles.slice(results.length).map((file, pendingOffset) => {
-        const index = results.length + pendingOffset;
+      const pendingFiles = selectedFiles.filter(file =>
+        !results.some(result => result && result.fileName === file.name)
+      );
+      const pendingHtml = pendingFiles.map(file => {
+        const index = selectedFiles.indexOf(file);
         const previewFile = file?.__csvnestPreviewFile || file;
         const isPreviewable = !!previewFile && String(previewFile.type || "").startsWith("image/");
         const previewUrl = isPreviewable ? getCsvnestPreviewUrl(previewFile) : "";
@@ -2903,7 +3101,10 @@ Requirements:
               <div class="upload-file-meta">${formatSize(file.size)}</div>
               <div class="upload-file-status">Waiting for generation…</div>
             </div>
-            <button type="button" class="upload-file-remove" onclick="removeFile(${index})" aria-label="Remove file">×</button>
+            <div class="upload-file-actions">
+              <button type="button" class="upload-file-generate" data-upload-generate="${index}" aria-label="Generate metadata for ${escapeHtml(file.name)}">✦ Generate</button>
+              <button type="button" class="upload-file-remove" onclick="removeFile(${index})" aria-label="Remove file">×</button>
+            </div>
           </div>
         `;
       }).join("");
@@ -2911,7 +3112,7 @@ Requirements:
       fileList.innerHTML = generatedHtml + pendingHtml;
 
       fileList.querySelectorAll(".result-card").forEach((card, index) => {
-        const result = results[index];
+        const result = displayResults[index];
         const keywordEditor = card.querySelector("[data-edit-keywords]");
 
         function renderEditKeywords() {
@@ -3009,14 +3210,53 @@ Requirements:
         });
 
         const regen = card.querySelector(`[data-regenerate-index="${index}"]`);
-        regen?.addEventListener("click", () => regenerateSingleResult(index, results, regen));
+        regen?.addEventListener("click", () => regenerateSingleResult(result, results, index, regen));
+      });
+
+      fileList.querySelectorAll("[data-upload-generate]").forEach(button => {
+        const index = Number(button.getAttribute("data-upload-generate"));
+        button.addEventListener("click", () => generateSingleUploadedFile(index, button));
       });
     }
 
 
+    // Generate metadata for one uploaded file without generating the rest.
+    async function generateSingleUploadedFile(index, button) {
+      const file = selectedFiles[index];
+      if (!file) return;
+
+      const apiKey = getSavedApiKey();
+      if (!apiKey) {
+        openApiModal();
+        apiStatus.textContent = "Add your Gemini API key first.";
+        apiStatus.style.color = "#e3a2a5";
+        return;
+      }
+
+      // Do not generate the same file twice; use REGENERATE on a completed card instead.
+      if (generatedResults.some(result => result && result.fileName === file.name)) return;
+
+      button.disabled = true;
+      button.textContent = "⏳ Generating...";
+      generationStatus.textContent = `Generating: ${file.name}`;
+
+      try {
+        const settings = getTitleSettings();
+        const result = await generateMetadataForFile(file, apiKey, settings);
+        generatedResults.push(result);
+        renderGeneratedResults(generatedResults);
+        generationStatus.textContent = `Generated — ${file.name}`;
+      } catch (error) {
+        console.error(error);
+        alert(`Gemini generation failed:\n\n${error.message}`);
+        button.disabled = false;
+        button.textContent = "✦ Generate";
+      }
+    }
+
+
     // Regenerate one file using the current settings and the existing Gemini key.
-    async function regenerateSingleResult(index, results, button) {
-      const result = results[index];
+    async function regenerateSingleResult(result, results, index, button) {
       if (!result) return;
 
       const file = selectedFiles.find(f => f.name === result.fileName);
@@ -3122,12 +3362,14 @@ Requirements:
       generateBtn.textContent = "⏳ Generating...";
       generationStatus.textContent = "Gemini is generating metadata...";
 
-      const results = [];
+      const results = Array.isArray(generatedResults) ? [...generatedResults] : [];
       generatedResults = results;
 
       try {
         for (let i = 0; i < selectedFiles.length; i++) {
           const file = selectedFiles[i];
+          if (results.some(result => result && result.fileName === file.name)) continue;
+
           generationStatus.textContent =
             `Generating ${i + 1} of ${selectedFiles.length}: ${file.name}`;
 
@@ -3408,8 +3650,16 @@ Requirements:
         });
 
         platform.classList.add("selected");
+        const profileSelect = document.getElementById("profile");
+        if (profileSelect) {
+          profileSelect.value = platform.dataset.value || "General";
+          profileSelect.dispatchEvent(new Event("change", { bubbles: true }));
+        }
       });
     });
+
+    const initialProfile = document.getElementById("profile");
+    if (initialProfile) initialProfile.value = "General";
 
     document.querySelectorAll(".tab").forEach(tab => {
       tab.addEventListener("click", () => {
