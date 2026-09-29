@@ -2891,15 +2891,19 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
     // and use the first model that is available for the current API key/quota.
     // If one model is unavailable, rate-limited, or temporarily fails, the next
     // model is tried automatically.
+    // Current Gemini API models.
+    // The previous list contained models/aliases that can now be unavailable
+    // to new users or temporarily capacity-limited. Keep several current
+    // stable Flash models so the app can automatically fall back.
     const GEMINI_MODELS = [
-      { id: "gemini-3.1-flash-lite", label: "Gemini 3.1 Flash-Lite" },
-      { id: "gemini-flash-latest", label: "Gemini Flash (Latest)" },
-      { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-      { id: "gemini-2.5-flash-lite", label: "Gemini 2.5 Flash-Lite" }
+      { id: "gemini-3.8-flash", label: "Gemini 3.8 Flash" },
+      { id: "gemini-3.7-flash", label: "Gemini 3.7 Flash" },
+      { id: "gemini-3.6-flash", label: "Gemini 3.6 Flash" },
+      { id: "gemini-3.5-flash-lite", label: "Gemini 3.5 Flash-Lite" }
     ];
 
     // Kept for compatibility with any existing code that reads GEMINI_MODEL.
-    const GEMINI_MODEL = GEMINI_MODELS[2].id;
+    const GEMINI_MODEL = GEMINI_MODELS[0].id;
 
     function getSavedApiKey() {
       const connected = Array.isArray(csvnestGeminiKeys)
@@ -4868,10 +4872,19 @@ Requirements:
     ai.disabled=true;aiBox.classList.add('show');aiBox.textContent='Gemini is analyzing the live market sample…';
     try{
       const prompt=`Analyze this live Adobe Stock market sample. Return 5 concise bullets: demand themes, content types appearing often, download concentration, AI-content mix, and practical design research ideas. Clearly state that this is sample-based analysis and not Adobe's official ranking. Data: ${JSON.stringify(liveResults.slice(0,100))}`;
-      const model=(typeof GEMINI_MODELS!=='undefined'&&GEMINI_MODELS[0]?.id)||'gemini-2.5-flash';
-      const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
-      const data=await res.json();if(!res.ok)throw new Error(data?.error?.message||`HTTP ${res.status}`);
-      const text=data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('\n')||'No analysis returned.';
+      let text='';
+      const errors=[];
+      for(const model of (typeof GEMINI_MODELS!=='undefined' ? GEMINI_MODELS : [{id:'gemini-3.8-flash',label:'Gemini 3.8 Flash'}])){
+        try{
+          const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model.id)}:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+          const data=await res.json().catch(()=>({}));
+          if(!res.ok){errors.push(`${model.label}: ${data?.error?.message||`HTTP ${res.status}`}`);continue;}
+          text=data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('\n')||'';
+          if(text) break;
+          errors.push(`${model.label}: empty response`);
+        }catch(err){errors.push(`${model.label}: ${err?.message||err}`);}
+      }
+      if(!text) throw new Error('All Gemini models failed.\n\n'+errors.join('\n'));
       aiBox.innerHTML='<b>Gemini Market Analysis</b><br>'+esc(text).replace(/\n/g,'<br>');
     }catch(e){aiBox.textContent='Gemini analysis failed: '+e.message;}
     finally{ai.disabled=false;}
