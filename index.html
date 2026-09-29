@@ -414,11 +414,6 @@
     .csvnest-profile-platform-grid .platform[data-value="Magnific"] .platform-dot{border-radius:3px;transform:rotate(45deg);}
     .csvnest-profile-platform-grid .platform[data-value="Shutterstock"] .platform-dot{border-radius:50%;}
     .csvnest-profile-platform-grid .platform[data-value="Vecteezy"] .platform-dot{border-radius:2px;transform:rotate(45deg);}
-    .csvnest-profile-platform-grid .platform[data-value="Depositphotos"] .platform-dot{border-radius:50%;}
-    .csvnest-profile-platform-grid .platform[data-value="123RF"] .platform-dot{border-radius:4px;}
-    .csvnest-profile-platform-grid .platform[data-value="Dreamstime"] .platform-dot{border-radius:50%;}
-    .csvnest-profile-platform-grid .platform[data-value="Freepik"] .platform-dot{border-radius:4px;}
-    .csvnest-profile-platform-grid .platform[data-value="iStock"] .platform-dot{border-radius:2px;}
     .csvnest-profile-select-hidden{
       position:absolute !important;
       width:1px !important;
@@ -1973,6 +1968,33 @@ body.light-mode .csvnest-brand-mode{
   border-color:#cfd6df;
   box-shadow:0 4px 12px rgba(16,24,40,.10);
 }
+body.light-mode .csvnest-platform-top-card{
+  background:linear-gradient(145deg,#ffffff,#f7f9fb)!important;
+  border-color:#dfe4eb!important;
+  box-shadow:0 12px 35px rgba(16,24,40,.08)!important;
+}
+body.light-mode .csvnest-platform-top-card .csvnest-profile-platforms{
+  border-bottom-color:#dfe4eb!important;
+}
+body.light-mode .csvnest-platform-top-card .csvnest-profile-platforms-title{
+  color:#00a98f!important;
+}
+body.light-mode .csvnest-platform-top-card .csvnest-profile-platform-grid .platform{
+  background:#ffffff!important;
+  color:#667085!important;
+  border-color:#d5dce5!important;
+}
+body.light-mode .csvnest-platform-top-card .csvnest-profile-platform-grid .platform:hover{
+  background:#f4f6f8!important;
+  color:#172033!important;
+  border-color:#98a2b3!important;
+}
+body.light-mode .csvnest-platform-top-card .csvnest-profile-platform-grid .platform.selected{
+  background:#eefaf7!important;
+  color:#172033!important;
+  border-color:#00a98f!important;
+  box-shadow:0 0 0 1px rgba(0,169,143,.12),0 0 16px rgba(0,169,143,.08)!important;
+}
 body.light-mode .csvnest-mf-btn{background:#eef2f6!important;color:#344054!important;border-color:#d5dce5!important}
 body.light-mode .csvnest-mf-danger{background:#fff0f0!important;color:#b42318!important}
 body.light-mode .csvnest-mf-active{background:#e7efff!important;color:#2166f3!important}
@@ -2054,6 +2076,23 @@ window.CSVNestEPS = {
 };
 </script>
 
+<style id="csvnest-no-outer-result-lines">
+/* Remove the tall nested container borders that appear beside generated results.
+   Keep the individual .result-card border as the only result outline. */
+.preview { border: 0 !important; outline: 0 !important; }
+.preview #fileList { border: 0 !important; outline: 0 !important; background: transparent !important; }
+.preview .upload-card, .right-column > .upload-card { border: 0 !important; outline: 0 !important; box-shadow: none !important; background: transparent !important; }
+.preview .file-row { border-left: 0 !important; border-right: 0 !important; }
+.preview .result-card { border: 1px solid #303837 !important; }
+.preview .result-card, .preview .result-card * { box-shadow: none; }
+</style>
+
+<style id="csvnest-result-layout-structure-fix">
+.preview #fileList { display:block !important; width:100% !important; }
+.preview .result-card { display:block !important; width:100% !important; box-sizing:border-box !important; margin:10px 0 !important; }
+.preview .result-card .result-layout { display:grid !important; width:100% !important; box-sizing:border-box !important; }
+.preview .result-card .result-meta-panel { min-width:0 !important; width:auto !important; }
+</style>
 </head>
 
 <body>
@@ -2310,11 +2349,6 @@ window.CSVNestEPS = {
                 <option>Magnific</option>
                 <option>Shutterstock</option>
                 <option>Vecteezy</option>
-                <option>Depositphotos</option>
-                <option>123RF</option>
-                <option>Dreamstime</option>
-                <option>Freepik</option>
-                <option>iStock</option>
               </select>
           </div>
           <div class="card upload-card">
@@ -2423,7 +2457,14 @@ window.CSVNestEPS = {
         // after upload using the same Ghostscript WASM renderer used for AI.
         if (isCsvnestEPS(file) && !file.__csvnestPreviewFile) {
           if (status) status.textContent = "Rendering EPS preview…";
-          file.__csvnestPreviewFile = await window.CSVNestEPS.toPNG(file);
+          // Share one render promise between the upload preview and AI generation.
+          // This prevents the same EPS from being rendered twice at the same time.
+          if (!file.__csvnestPreviewPromise) {
+            file.__csvnestPreviewPromise = window.CSVNestEPS.toPNG(file)
+              .then(png => { file.__csvnestPreviewFile = png; return png; })
+              .finally(() => { delete file.__csvnestPreviewPromise; });
+          }
+          file.__csvnestPreviewFile = await file.__csvnestPreviewPromise;
           previewFile = file.__csvnestPreviewFile;
         }
 
@@ -2543,26 +2584,40 @@ window.CSVNestEPS = {
     // and use the first model that is available for the current API key/quota.
     // If one model is unavailable, rate-limited, or temporarily fails, the next
     // model is tried automatically.
+    // Current Gemini models. The old preview/alias IDs were causing
+    // "model unavailable" errors. Keep stable models first and use the
+    // lower-cost Flash-Lite model as the main metadata fallback.
     const GEMINI_MODELS = [
+      { id: "gemini-3.8-flash", label: "Gemini 3.8 Flash" },
+      { id: "gemini-3.7-flash", label: "Gemini 3.7 Flash" },
+      { id: "gemini-3.6-flash", label: "Gemini 3.6 Flash" },
+      { id: "gemini-3.5-flash-lite", label: "Gemini 3.5 Flash-Lite" },
       { id: "gemini-3.1-flash-lite", label: "Gemini 3.1 Flash-Lite" },
-      { id: "gemini-flash-latest", label: "Gemini Flash (Latest)" },
-      { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-      { id: "gemini-2.5-flash-lite", label: "Gemini 2.5 Flash-Lite" }
+      { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash" }
     ];
 
     // Kept for compatibility with any existing code that reads GEMINI_MODEL.
-    const GEMINI_MODEL = GEMINI_MODELS[2].id;
+    const GEMINI_MODEL = GEMINI_MODELS[0].id;
+
+    function getSavedApiKeys() {
+      const keys = Array.isArray(csvnestGeminiKeys)
+        ? csvnestGeminiKeys
+            .filter(x => x && x.key && x.key.trim())
+            .sort((a, b) => {
+              const ac = a.status === "Connected ✓" ? 0 : 1;
+              const bc = b.status === "Connected ✓" ? 0 : 1;
+              return ac - bc;
+            })
+            .map(x => x.key.trim())
+        : [];
+
+      const legacy = (localStorage.getItem("csvnest_gemini_api_key") || "").trim();
+      if (legacy && !keys.includes(legacy)) keys.push(legacy);
+      return [...new Set(keys)];
+    }
 
     function getSavedApiKey() {
-      const connected = Array.isArray(csvnestGeminiKeys)
-        ? csvnestGeminiKeys.find(x => x && x.key && x.key.trim() && x.status === "Connected ✓")
-        : null;
-      if (connected) return connected.key.trim();
-
-      const current = Array.isArray(csvnestGeminiKeys)
-        ? csvnestGeminiKeys.find(x => x && x.key && x.key.trim())
-        : null;
-      return current ? current.key.trim() : (localStorage.getItem("csvnest_gemini_api_key") || "").trim();
+      return getSavedApiKeys()[0] || "";
     }
 
     function getTitleSettings() {
@@ -2672,47 +2727,11 @@ window.CSVNestEPS = {
     function enforceCsvnestMetadataLimits(result) {
       if (!result) return result;
 
-      // Keep the existing configured rules; only shorten values that are over max.
-      const titleMax = Number(csvnestMetadataRules?.titleMax || 0);
+      // Titles are intentionally NOT truncated. The user wants the complete
+      // Before Title / After Title text preserved even when the title exceeds
+      // the configured maximum. Description and keyword limits remain unchanged.
       const descMax = Number(csvnestMetadataRules?.descMax || 0);
       const kwMax = Number(csvnestMetadataRules?.kwMax || 0);
-
-      if (titleMax > 0) {
-        // Preserve the user's Before/After Title text when enforcing the maximum.
-        // Only shorten the AI-generated middle portion so custom title text is
-        // never cut off from the beginning or end.
-        syncCsvnestMetaSettings();
-        const before = String(csvnestAdvancedSettings?.beforeTitle || "").trim();
-        const after = String(csvnestAdvancedSettings?.afterTitle || "").trim();
-
-        if (before || after) {
-          const prefix = before ? before + " " : "";
-          const suffix = after ? " " + after : "";
-          const prefixLen = prefix.length;
-          const suffixLen = suffix.length;
-
-          if (prefixLen + suffixLen < titleMax) {
-            let core = String(result.title || "").trim();
-
-            const hasPrefix = before &&
-              core.toLowerCase().startsWith(prefix.toLowerCase());
-            const hasSuffix = after &&
-              core.toLowerCase().endsWith(suffix.toLowerCase());
-
-            if (hasPrefix) core = core.slice(prefixLen).trim();
-            if (hasSuffix) core = core.slice(0, Math.max(0, core.length - suffixLen)).trim();
-
-            const availableCore = Math.max(1, titleMax - prefixLen - suffixLen);
-            core = trimToMaxCharacters(core, availableCore);
-
-            result.title = (prefix + core + suffix).replace(/\s+/g, " ").trim();
-          } else {
-            result.title = trimToMaxCharacters(result.title, titleMax);
-          }
-        } else {
-          result.title = trimToMaxCharacters(result.title, titleMax);
-        }
-      }
 
       if (descMax > 0) {
         result.description = trimToMaxCharacters(result.description, descMax);
@@ -2764,7 +2783,11 @@ window.CSVNestEPS = {
       return csvnestMetadataSafetyFilter(result);
     }
 
-    async function generateMetadataForFile(file, apiKey, settings) {
+    // Cache the last working model per API key so normal requests do not
+    // repeatedly pay the cost of failed model fallbacks.
+    const csvnestPreferredModelByKey = new Map();
+
+    async function generateMetadataForFileOnce(file, apiKey, settings, retryInstruction = "") {
       syncCsvnestMetaSettings();
       const titleMin = csvnestMetadataRules.titleMin;
       const titleMax = csvnestMetadataRules.titleMax;
@@ -2791,8 +2814,14 @@ window.CSVNestEPS = {
 
       if (isEPS) {
         generationStatus.textContent = `Rendering EPS for AI analysis: ${file.name}`;
+        // Reuse an upload-preview render if one is already running/finished.
         if (!file.__csvnestPreviewFile) {
-          file.__csvnestPreviewFile = await window.CSVNestEPS.toPNG(file);
+          if (!file.__csvnestPreviewPromise) {
+            file.__csvnestPreviewPromise = window.CSVNestEPS.toPNG(file)
+              .then(png => { file.__csvnestPreviewFile = png; return png; })
+              .finally(() => { delete file.__csvnestPreviewPromise; });
+          }
+          file.__csvnestPreviewFile = await file.__csvnestPreviewPromise;
         }
         analysisFile = file.__csvnestPreviewFile;
       }
@@ -2826,7 +2855,11 @@ ${visualInstruction}
 Generate metadata suitable for a commercial stock marketplace.
 
 Requirements:
-- Title: between ${titleMin} and ${titleMax} characters including spaces. Clear, searchable, natural, no keyword stuffing.
+- Title: between ${titleMin} and ${titleMax} characters including spaces when possible. Clear, searchable, natural, no keyword stuffing.
+- ${retryInstruction || "Make the title fit the requested character range accurately."}
+- If the artwork contains readable text, a slogan, quote, phrase, or named wording, carefully read the visible text and include the important exact wording in the title. Do not replace a visible quote with a generic description when the quote is legible.
+- Preserve the meaningful visible quote/phrase naturally in the title, then add concise searchable descriptors of the artwork.
+- Never invent or paraphrase readable artwork text when it can be observed.
 - Description: between ${descMin} and ${descMax} characters including spaces. Describe the asset accurately and naturally.
 - Keywords: generate between ${keywordMin} and ${keywordMax} unique keywords.
 - Keyword mode: ${keywordMode}.
@@ -2834,7 +2867,8 @@ Requirements:
 - Title style: ${getTitleStyleText(style)}.
 - Before Title text: ${before || "(none)"}
 - After Title text: ${after || "(none)"}
-- Do NOT omit the requested before/after text. It will also be applied by the app after generation.
+- IMPORTANT: Do NOT include the exact Before Title or After Title text in your generated title. The app will add those fields exactly once after generation.
+- Keep the generated title natural and complete; do not reserve or remove characters for the Before/After fields.
 - Category preference: ${category}.
 - Extra metadata instruction: ${instruction || "(none)"}.
 - STRICT IP SAFETY: Do not include company/brand names, logos, trademarks, artist names, real known people, fictional character names, movie/franchise/comic/art/design names, government agencies, or references to third-party intellectual property.
@@ -2864,8 +2898,16 @@ Requirements:
       let usedModel = null;
       const modelErrors = [];
 
-      // Try every supported model until one actually works.
-      for (const model of GEMINI_MODELS) {
+      // Try the last successful model first; fall back only when necessary.
+      const preferredModelId = csvnestPreferredModelByKey.get(apiKey);
+      const orderedModels = preferredModelId
+        ? [
+            ...GEMINI_MODELS.filter(model => model.id === preferredModelId),
+            ...GEMINI_MODELS.filter(model => model.id !== preferredModelId)
+          ]
+        : GEMINI_MODELS;
+
+      for (const model of orderedModels) {
         try {
           const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${model.id}:generateContent`,
@@ -2905,6 +2947,7 @@ Requirements:
           }
 
           usedModel = model;
+          csvnestPreferredModelByKey.set(apiKey, model.id);
           break;
         } catch (error) {
           modelErrors.push(`${model.label}: ${error?.message || error}`);
@@ -2924,6 +2967,44 @@ Requirements:
       csvnestMetadataSafetyFilter(result);
       enforceCsvnestMetadataLimits(result);
       return result;
+    }
+
+    // Generate metadata and automatically retry when the FINAL title (after
+    // decoration/safety cleanup) falls outside the configured character range.
+    // This prevents a title such as 99/100-120 from remaining red and saves the
+    // user from having to click REGENERATE manually.
+    async function generateMetadataForFile(file, apiKey, settings) {
+      syncCsvnestMetaSettings();
+      const titleMin = Number(csvnestMetadataRules?.titleMin || 0);
+      const titleMax = Number(csvnestMetadataRules?.titleMax || Infinity);
+      const maxAttempts = 3;
+      let lastResult = null;
+      let lastCount = 0;
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const retryInstruction = attempt === 1
+          ? `After writing the title, count every character including spaces. The FINAL title must be ${titleMin}-${titleMax} characters.`
+          : `RETRY ${attempt}: The previous title was ${lastCount} characters and did not meet the ${titleMin}-${titleMax} character requirement. Write a NEW title for the same artwork. Make the FINAL title ${titleMin}-${titleMax} characters including spaces. Do not shorten it below ${titleMin}; add useful, accurate visual descriptors when needed. Do not use filler or keyword stuffing. Count the characters before returning JSON.`;
+
+        const result = await generateMetadataForFileOnce(file, apiKey, settings, retryInstruction);
+        lastResult = result;
+        lastCount = [...String(result?.title || "")].length;
+
+        const inRange = lastCount >= titleMin && lastCount <= titleMax;
+        if (inRange) {
+          return result;
+        }
+
+        if (attempt < maxAttempts) {
+          generationStatus.textContent =
+            `Title ${lastCount}/${titleMin}-${titleMax} — automatically regenerating: ${file.name}`;
+        }
+      }
+
+      // If the model still misses the range after the automatic retries, keep
+      // the last result so the UI can show the red count and the user can use
+      // REGENERATE manually.
+      return lastResult;
     }
 
     function getCsvnestPreviewUrl(file) {
@@ -3046,6 +3127,7 @@ Requirements:
                   </button>
                 </div>
               </div>
+            </div>
             </div>
 
             <!-- EDIT MODE -->
@@ -3220,6 +3302,41 @@ Requirements:
     }
 
 
+    // Try all saved Gemini keys when the current key is rate-limited, over quota,
+    // temporarily unavailable, or otherwise fails. This prevents one exhausted
+    // key from stopping the whole batch.
+    async function generateMetadataWithKeyFallback(file, settings) {
+      const keys = getSavedApiKeys();
+      if (!keys.length) {
+        throw new Error("No Gemini API key found. Add a Gemini API key first.");
+      }
+
+      const errors = [];
+      for (let i = 0; i < keys.length; i++) {
+        try {
+          generationStatus.textContent =
+            `Trying Gemini API key ${i + 1} of ${keys.length}: ${file.name}`;
+          const result = await generateMetadataForFile(file, keys[i], settings);
+
+          // Mark the successful key so it is preferred next time.
+          const item = csvnestGeminiKeys.find(x => x && x.key && x.key.trim() === keys[i]);
+          if (item) item.status = "Connected ✓";
+          return result;
+        } catch (error) {
+          const message = String(error?.message || error);
+          errors.push(`Key ${i + 1}: ${message}`);
+          const item = csvnestGeminiKeys.find(x => x && x.key && x.key.trim() === keys[i]);
+          if (item) item.status = "ERROR: " + message.split("\n")[0].slice(0, 180);
+          renderProviderKeys();
+        }
+      }
+
+      throw new Error(
+        "All Gemini API keys/models failed.\n\n" + errors.join("\n\n") +
+        "\n\nIf the message says quota exceeded, wait for the quota window to reset or use a key from another Google Cloud project."
+      );
+    }
+
     // Generate metadata for one uploaded file without generating the rest.
     async function generateSingleUploadedFile(index, button) {
       const file = selectedFiles[index];
@@ -3242,7 +3359,7 @@ Requirements:
 
       try {
         const settings = getTitleSettings();
-        const result = await generateMetadataForFile(file, apiKey, settings);
+        const result = await generateMetadataWithKeyFallback(file, settings);
         generatedResults.push(result);
         renderGeneratedResults(generatedResults);
         generationStatus.textContent = `Generated — ${file.name}`;
@@ -3277,7 +3394,7 @@ Requirements:
       try {
         generationStatus.textContent = `Regenerating: ${file.name}`;
         const settings = getTitleSettings();
-        const regenerated = await generateMetadataForFile(file, apiKey, settings);
+        const regenerated = await generateMetadataWithKeyFallback(file, settings);
 
         results[index] = regenerated;
         generatedResults = results;
@@ -3342,6 +3459,11 @@ Requirements:
         `CSV exported — ${generatedResults.length} file${generatedResults.length === 1 ? "" : "s"}.`;
     }
 
+    // Generate ALL pending files reliably.
+    // Use a single-file queue instead of concurrent Gemini requests. This avoids
+    // API rate-limit/quota collisions and prevents one re-render from interfering
+    // with other in-flight workers. Each file is generated, saved, and rendered
+    // before the next file starts.
     generateBtn.addEventListener("click", async () => {
       if (!selectedFiles.length) {
         alert("Please upload at least one file first.");
@@ -3349,7 +3471,6 @@ Requirements:
       }
 
       const apiKey = getSavedApiKey();
-
       if (!apiKey) {
         openApiModal();
         apiStatus.textContent = "Add your Gemini API key first.";
@@ -3358,39 +3479,104 @@ Requirements:
       }
 
       const settings = getTitleSettings();
-      generateBtn.disabled = true;
-      generateBtn.textContent = "⏳ Generating...";
-      generationStatus.textContent = "Gemini is generating metadata...";
-
       const results = Array.isArray(generatedResults) ? [...generatedResults] : [];
       generatedResults = results;
 
+      const pending = selectedFiles.filter(file =>
+        !results.some(result => result && result.fileName === file.name)
+      );
+
+      if (!pending.length) {
+        renderGeneratedResults(results);
+        generateBtn.textContent = "✓ All Generated";
+        generationStatus.textContent =
+          `Done — all ${results.length} file${results.length === 1 ? "" : "s"} already generated.`;
+        setTimeout(() => {
+          if (!generateBtn.disabled) generateBtn.innerHTML = "✦ &nbsp; Generate All";
+        }, 1800);
+        return;
+      }
+
+      generateBtn.disabled = true;
+      generateBtn.textContent = "⏳ Generating...";
+      generationStatus.textContent = `Starting batch — ${pending.length} file${pending.length === 1 ? "" : "s"} waiting...`;
+
+      // Prevent manual per-file generation while Generate All is running.
+      fileList.querySelectorAll("[data-upload-generate]").forEach(btn => {
+        btn.disabled = true;
+      });
+
+      let completed = 0;
+      let failed = 0;
+      const failedFiles = [];
+
       try {
-        for (let i = 0; i < selectedFiles.length; i++) {
-          const file = selectedFiles[i];
-          if (results.some(result => result && result.fileName === file.name)) continue;
-
+        for (const file of pending) {
           generationStatus.textContent =
-            `Generating ${i + 1} of ${selectedFiles.length}: ${file.name}`;
+            `Generating ${completed + failed + 1} of ${pending.length}: ${file.name}`;
 
-          const result = await generateMetadataForFile(file, apiKey, settings);
-          results.push(result);
-          generatedResults = results;
-          renderGeneratedResults(results);
+          try {
+            // Wait for the current file to finish completely before starting
+            // the next one. This is intentionally sequential for reliability.
+            const result = await generateMetadataWithKeyFallback(file, settings);
+
+            if (result) {
+              // Replace an existing same-name result if one somehow appeared
+              // while the batch was running; otherwise append normally.
+              const existingIndex = results.findIndex(
+                item => item && item.fileName === result.fileName
+              );
+              if (existingIndex >= 0) {
+                results[existingIndex] = result;
+              } else {
+                results.push(result);
+              }
+              generatedResults = results;
+            }
+
+            completed++;
+            renderGeneratedResults(results);
+            generationStatus.textContent =
+              `Generated ${completed + failed} of ${pending.length}: ${file.name}`;
+          } catch (error) {
+            failed++;
+            failedFiles.push(`${file.name}: ${error?.message || error}`);
+            console.error(`Generation failed for ${file.name}:`, error);
+            renderGeneratedResults(results);
+            generationStatus.textContent =
+              `Failed ${completed + failed} of ${pending.length}: ${file.name}`;
+          }
         }
 
-        generateBtn.textContent = "✓ Generated";
-        generationStatus.textContent =
-          `Done — ${results.length} file${results.length === 1 ? "" : "s"} generated.`;
+        const totalProcessed = completed + failed;
+        if (failed === 0) {
+          generateBtn.textContent = "✓ All Generated";
+          generationStatus.textContent =
+            `Done — ${completed} of ${pending.length} new file${pending.length === 1 ? "" : "s"} generated successfully.`;
+        } else {
+          generateBtn.textContent = "⚠ Batch Finished";
+          generationStatus.textContent =
+            `Finished — ${completed} generated, ${failed} failed, ${totalProcessed} processed.`;
+
+          // Keep the failed files available with their individual Generate buttons.
+          alert(
+            `Batch generation finished.\n\n` +
+            `Generated: ${completed}\n` +
+            `Failed: ${failed}\n\n` +
+            failedFiles.join("\n\n")
+          );
+        }
       } catch (error) {
         console.error(error);
-        generationStatus.textContent = `Error: ${error.message}`;
-        alert(`Gemini generation failed:\n\n${error.message}`);
+        generationStatus.textContent = `Batch error: ${error?.message || error}`;
+        alert(`Gemini batch generation failed:\n\n${error?.message || error}`);
         generateBtn.textContent = "✦  Generate All";
       } finally {
         generateBtn.disabled = false;
+        renderGeneratedResults(results);
+
         setTimeout(() => {
-          if (generateBtn.textContent === "✓ Generated") {
+          if (!generateBtn.disabled) {
             generateBtn.innerHTML = "✦ &nbsp; Generate All";
           }
         }, 1800);
@@ -3595,18 +3781,63 @@ Requirements:
     }
 
     // Keep the existing title decorator working with the new controller.
+    function csvnestRemoveDuplicateTitleWords(title) {
+      const text = String(title || "").replace(/\s+/g, " ").trim();
+      if (!text) return "";
+
+      // Remove repeated words from AI output while preserving the first
+      // meaningful occurrence. Keep short function words (and, of, the, etc.)
+      // untouched so normal English phrasing is not damaged.
+      const keepRepeat = new Set([
+        "a", "an", "and", "as", "at", "by", "for", "from", "in",
+        "into", "is", "it", "of", "on", "or", "the", "to", "with"
+      ]);
+      const seen = new Set();
+      return text.split(" ").filter(word => {
+        const key = word.toLowerCase().replace(/^[^a-z0-9]+|[^a-z0-9]+$/gi, "");
+        if (!key || keepRepeat.has(key)) return true;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).join(" ").replace(/\s+/g, " ").trim();
+    }
+
     function decorateCsvnestTitle(title) {
       syncCsvnestMetaSettings();
-      let t = String(title || "").replace(/\s+/g, " ").trim();
-      const before = csvnestAdvancedSettings.beforeTitle;
-      const after = csvnestAdvancedSettings.afterTitle;
+      let t = csvnestRemoveDuplicateTitleWords(title);
+      const before = String(csvnestAdvancedSettings.beforeTitle || "").replace(/\s+/g, " ").trim();
+      const after = String(csvnestAdvancedSettings.afterTitle || "").replace(/\s+/g, " ").trim();
 
-      if (before && !t.toLowerCase().startsWith(before.toLowerCase() + " ")) {
-        t = before + " " + t;
+      // Gemini is instructed not to repeat these fields, but older prompts or
+      // cached responses may still contain them. Remove an existing matching
+      // prefix/suffix first, then apply the settings exactly once.
+      if (before && t.toLowerCase().startsWith(before.toLowerCase())) {
+        t = t.slice(before.length).replace(/^\s+/, "");
       }
-      if (after && !t.toLowerCase().endsWith(" " + after.toLowerCase())) {
-        t = t + " " + after;
+      if (after && t.toLowerCase().endsWith(after.toLowerCase())) {
+        t = t.slice(0, Math.max(0, t.length - after.length)).replace(/\s+$/, "");
       }
+
+      // Avoid repeating a meaningful word that is already supplied by the
+      // Before/After fields. This is especially important for common suffixes
+      // such as "T Shirt Design", where Gemini may also output "Design".
+      const protectedWords = new Set([
+        ...before.toLowerCase().split(/\s+/).map(w => w.replace(/[^a-z0-9]/gi, "")).filter(Boolean),
+        ...after.toLowerCase().split(/\s+/).map(w => w.replace(/[^a-z0-9]/gi, "")).filter(Boolean)
+      ]);
+      if (protectedWords.size) {
+        const suffixWords = new Set(after.toLowerCase().split(/\s+/).map(w => w.replace(/[^a-z0-9]/gi, "")).filter(Boolean));
+        if (suffixWords.size) {
+          t = t.split(" ").filter(word => {
+            const key = word.toLowerCase().replace(/[^a-z0-9]/gi, "");
+            return !key || !suffixWords.has(key);
+          }).join(" ").replace(/\s+/g, " ").trim();
+        }
+      }
+
+      if (before) t = before + (t ? " " + t : "");
+      if (after) t = t ? t + " " + after : after;
+
       return t.replace(/\s+/g, " ").trim();
     }
 
@@ -3908,8 +4139,8 @@ Requirements:
         let connectedModel = null;
         const errors = [];
 
-        // A key is considered healthy if at least one of the supported
-        // Gemini models accepts a small test request.
+        // A key is considered healthy if at least one current Gemini model
+        // accepts a small test request.
         for (const model of GEMINI_MODELS) {
           try {
             const response = await fetch(
