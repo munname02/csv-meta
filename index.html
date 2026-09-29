@@ -557,6 +557,26 @@
       display: none;
       padding: 16px;
     }
+    /* Keep generated metadata separate from the Upload Files card.
+       Each result-card remains an independent block. */
+    .metadata-results-wrap{
+      width:100%;
+      margin-top:12px;
+      min-width:0;
+    }
+    .metadata-results-wrap .preview{
+      padding:0;
+      width:100%;
+      background:transparent;
+      border:0;
+      box-shadow:none;
+    }
+    .metadata-results-wrap .preview h3{
+      margin:0 0 10px;
+      padding:0 2px;
+      font-size:12px;
+    }
+
 
     .preview.show {
       display: block;
@@ -2264,6 +2284,48 @@ body.light-mode .mg-brand-name{color:#172033}.body.light-mode .mg-nav{background
 body.light-mode .mg-nav{background:#f3f5f8;border-color:#dfe4eb}.body.light-mode .mg-nav-btn{color:#667085}
 body.light-mode .mg-nav-btn{color:#667085}.body.light-mode .mg-nav-btn:hover{background:#e8edf3;color:#172033}
 body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-shadow:0 8px 22px rgba(85,214,178,.24)}
+
+.upload-file-list{display:block; margin-top:10px;}
+.metadata-results-wrap{
+  width:100%;
+  margin-top:14px;
+  min-width:0;
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  padding:0 !important;
+}
+.metadata-results-wrap > .empty{
+  min-height:260px;
+  margin:0;
+  border:0;
+  background:transparent;
+}
+.metadata-results-wrap .preview{
+  display:none;
+  width:100%;
+  margin:0;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+.metadata-results-wrap .preview.show{display:block;}
+.metadata-results-wrap .preview h3{margin:0 0 10px;padding:0 2px;font-size:12px;}
+.metadata-results-wrap #metadataFileList{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  width:100%;
+}
+.metadata-results-wrap .result-card{
+  width:100%;
+  margin:0 !important;
+  border:1px solid #303837;
+  border-radius:10px;
+  background:#171c1b;
+  box-shadow:none;
+}
 </style>
 </head>
 
@@ -2571,15 +2633,22 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
               <button class="action-btn" id="exportCsvBtn" type="button">⇩ &nbsp; Export CSV</button>
             </div>
 
+            <!-- Uploaded-file controls stay inside Upload Files and are hidden
+                 from the final Metadata Results layout. -->
+            <div id="uploadFileList" class="upload-file-list" aria-hidden="true"></div>
+          </div>
+
+          <!-- Metadata Results is a completely separate section. Each generated
+               file is rendered as one independent result card. -->
+          <div class="metadata-results-wrap">
             <div class="empty" id="emptyState">
               <div class="empty-icon">▧</div>
               <strong>Your generated results will appear here.</strong>
               <p>Upload some files and click "Generate All" to get started.</p>
             </div>
-
             <div class="preview" id="preview">
               <h3>Metadata Results</h3>
-              <div id="fileList"></div>
+              <div id="metadataFileList"></div>
               <div class="generation-status" id="generationStatus"></div>
             </div>
           </div>
@@ -2714,7 +2783,8 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
     const fileInput = document.getElementById("fileInput");
     const emptyState = document.getElementById("emptyState");
     const preview = document.getElementById("preview");
-    const fileList = document.getElementById("fileList");
+    const uploadFileList = document.getElementById("uploadFileList");
+    const metadataFileList = document.getElementById("metadataFileList");
     const clearBtn = document.getElementById("clearBtn");
     const generateBtn = document.getElementById("generateBtn");
     const batchSwitch = document.getElementById("batchSwitch");
@@ -2759,7 +2829,7 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
     }
 
     async function prepareCsvnestUploadPreview(file, index) {
-      const row = fileList.querySelector(`[data-upload-index="${index}"]`);
+      const row = uploadFileList.querySelector(`[data-upload-index="${index}"]`);
       const thumb = row?.querySelector("[data-upload-thumb]");
       const status = row?.querySelector("[data-upload-status]");
       if (!thumb) return;
@@ -2806,15 +2876,23 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
 
     function renderFiles() {
       if (!selectedFiles.length) {
+        uploadFileList.innerHTML = "";
         emptyState.style.display = "flex";
         preview.classList.remove("show");
+        metadataFileList.innerHTML = "";
         return;
       }
 
-      emptyState.style.display = "none";
-      preview.classList.add("show");
+      emptyState.style.display = generatedResults.length ? "none" : "flex";
+      if (!generatedResults.length) preview.classList.remove("show");
 
-      fileList.innerHTML = selectedFiles.map((file, index) => `
+      const visibleUploadFiles = generatedResults.length
+        ? selectedFiles.filter(file => !generatedResults.some(result => result && result.fileName === file.name))
+        : selectedFiles;
+
+      uploadFileList.innerHTML = visibleUploadFiles.map(file => {
+        const index = selectedFiles.indexOf(file);
+        return `
         <div class="upload-file-row" data-upload-index="${index}">
           <div class="upload-file-thumb" data-upload-thumb>
             <div class="upload-file-thumb-fallback">
@@ -2834,15 +2912,17 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
             <button type="button" class="upload-file-remove" onclick="removeFile(${index})" aria-label="Remove file">×</button>
           </div>
         </div>
-      `).join("");
+        `;
+      }).join("");
 
       // Raster/SVG previews appear immediately; EPS is rendered asynchronously
       // without waiting for Generate All.
-      selectedFiles.forEach((file, index) => {
+      visibleUploadFiles.forEach(file => {
+        const index = selectedFiles.indexOf(file);
         prepareCsvnestUploadPreview(file, index);
       });
 
-      fileList.querySelectorAll("[data-upload-generate]").forEach(button => {
+      uploadFileList.querySelectorAll("[data-upload-generate]").forEach(button => {
         const index = Number(button.getAttribute("data-upload-generate"));
         button.addEventListener("click", () => generateSingleUploadedFile(index, button));
       });
@@ -3367,6 +3447,7 @@ Requirements:
                 </div>
               </div>
             </div>
+            </div>
 
             <!-- EDIT MODE -->
             <div class="result-edit-panel">
@@ -3429,9 +3510,10 @@ Requirements:
         `;
       }).join("");
 
-      fileList.innerHTML = generatedHtml + pendingHtml;
+      metadataFileList.innerHTML = generatedHtml;
+      uploadFileList.innerHTML = pendingHtml;
 
-      fileList.querySelectorAll(".result-card").forEach((card, index) => {
+      metadataFileList.querySelectorAll(".result-card").forEach((card, index) => {
         const result = displayResults[index];
         const keywordEditor = card.querySelector("[data-edit-keywords]");
 
@@ -3533,7 +3615,7 @@ Requirements:
         regen?.addEventListener("click", () => regenerateSingleResult(result, results, index, regen));
       });
 
-      fileList.querySelectorAll("[data-upload-generate]").forEach(button => {
+      uploadFileList.querySelectorAll("[data-upload-generate]").forEach(button => {
         const index = Number(button.getAttribute("data-upload-generate"));
         button.addEventListener("click", () => generateSingleUploadedFile(index, button));
       });
@@ -3685,24 +3767,59 @@ Requirements:
       const results = Array.isArray(generatedResults) ? [...generatedResults] : [];
       generatedResults = results;
 
+      const errors = [];
+
       try {
+        // Generate All must actually regenerate EVERY selected file.
+        // The old code skipped files that already had a result, so pressing
+        // Generate All after a previous run appeared to do nothing.
         for (let i = 0; i < selectedFiles.length; i++) {
           const file = selectedFiles[i];
-          if (results.some(result => result && result.fileName === file.name)) continue;
 
           generationStatus.textContent =
             `Generating ${i + 1} of ${selectedFiles.length}: ${file.name}`;
 
-          const result = await generateMetadataForFile(file, apiKey, settings);
-          results.push(result);
-          generatedResults = results;
-          renderGeneratedResults(results);
+          try {
+            const result = await generateMetadataForFile(file, apiKey, settings);
+
+            // Replace an existing result for the same filename instead of
+            // creating duplicates.
+            const existingIndex = results.findIndex(
+              item => item && item.fileName === file.name
+            );
+
+            if (existingIndex >= 0) {
+              results[existingIndex] = result;
+            } else {
+              results.push(result);
+            }
+
+            generatedResults = results;
+            renderGeneratedResults(results);
+          } catch (fileError) {
+            console.error(`Generate All failed for ${file.name}:`, fileError);
+            errors.push(`${file.name}: ${fileError?.message || fileError}`);
+          }
         }
 
-        generateBtn.textContent = "✓ Generated";
-        generationStatus.textContent =
-          `Done — ${results.length} file${results.length === 1 ? "" : "s"} generated.`;
+        generatedResults = results;
+
+        if (errors.length) {
+          generateBtn.textContent = results.length ? "✓ Generated" : "✦  Generate All";
+          generationStatus.textContent =
+            `Finished: ${results.length} generated, ${errors.length} failed.`;
+
+          alert(
+            `Generate All finished with ${errors.length} failed file${errors.length === 1 ? "" : "s"}.\n\n` +
+            errors.join("\n\n")
+          );
+        } else {
+          generateBtn.textContent = "✓ Generated";
+          generationStatus.textContent =
+            `Done — ${results.length} file${results.length === 1 ? "" : "s"} generated.`;
+        }
       } catch (error) {
+        // Keep a final safety net for unexpected errors outside per-file generation.
         console.error(error);
         generationStatus.textContent = `Error: ${error.message}`;
         alert(`Gemini generation failed:\n\n${error.message}`);
