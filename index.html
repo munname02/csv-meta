@@ -826,6 +826,9 @@
       font-size: 8px;
     }
 
+    .pending-result-file-list{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
+    .pending-result-file-list .upload-file-row{margin-bottom:0;}
+
     .generation-status {
       margin: 10px 0 0;
       color: #7e8985;
@@ -1267,7 +1270,8 @@ body:not(.light-mode) .result-regenerate-btn{
     .csvnest-api-modal-sub{margin-top:4px;color:#737d7b;font-size:8px;line-height:1.45;}
     .csvnest-api-close{width:26px;height:26px;border-radius:6px;background:transparent;color:#8c9592;font-size:18px;cursor:pointer;}
     .csvnest-api-close:hover{background:#202525;color:#fff;}
-    .csvnest-api-provider-tabs{display:flex;gap:5px;padding:10px 18px 0;}
+    .gemini-api-model-picker{margin:7px 0 4px;} .gemini-api-model-picker select{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #39413f;border-radius:8px;background:#111515;color:#f0f2f1;font:600 12px Inter,sans-serif;outline:none;} .gemini-api-model-picker select:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(85,214,178,.12);} .gemini-api-model-help{font-size:9px;color:#78817f;margin-top:5px;}
+.csvnest-api-provider-tabs{display:flex;gap:5px;padding:10px 18px 0;}
     .csvnest-api-provider-tab{padding:8px 12px;border:1px solid #303735;border-radius:7px 7px 0 0;background:#171b1b;color:#8d9794;font-size:9px;font-weight:800;cursor:pointer;}
     .csvnest-api-provider-tab.active{background:#202b31;color:#fff;border-color:#3d6d80;}
     .csvnest-api-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 18px 18px;}
@@ -2399,7 +2403,20 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
                   <div class="csvnest-api-section-help" id="apiConfigHelp">Add and test your Google Gemini API key.</div>
 
                   <div class="csvnest-api-provider-panel" data-panel="Gemini">
-                    <div class="csvnest-provider-label">Gemini API Keys</div>
+                    <div class="csvnest-provider-label">MODEL</div>
+                    <div class="gemini-api-model-picker">
+                      <select id="geminiModelSelect" aria-label="Select Gemini model">
+                        <option value="gemini-3.8-flash">Gemini 3.8 Flash</option>
+                        <option value="gemini-3.7-flash">Gemini 3.7 Flash</option>
+                        <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
+                        <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite</option>
+                        <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite</option>
+                        <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                      </select>
+                      <div class="gemini-api-model-help">Selected model is used first for generation. If unavailable, the app falls back automatically.</div>
+                    </div>
+
+                    <div class="csvnest-provider-label" style="margin-top:14px;">Gemini API Keys</div>
                     <div id="geminiKeyList"></div>
                     <button type="button" class="action-btn csvnest-provider-add" id="addGeminiKey">＋ Add Gemini API Key</button>
                     <a class="csvnest-api-get-link" href="https://aistudio.google.com/app/api-keys" target="_blank" rel="noopener noreferrer">↗ Get Gemini API Key</a>
@@ -2649,6 +2666,7 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
             <div class="preview" id="preview">
               <h3>Metadata Results</h3>
               <div id="metadataFileList"></div>
+              <div id="pendingResultFileList" class="pending-result-file-list"></div>
               <div class="generation-status" id="generationStatus"></div>
             </div>
           </div>
@@ -2785,6 +2803,7 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
     const preview = document.getElementById("preview");
     const uploadFileList = document.getElementById("uploadFileList");
     const metadataFileList = document.getElementById("metadataFileList");
+    const pendingResultFileList = document.getElementById("pendingResultFileList");
     const clearBtn = document.getElementById("clearBtn");
     const generateBtn = document.getElementById("generateBtn");
     const batchSwitch = document.getElementById("batchSwitch");
@@ -2880,6 +2899,7 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
         emptyState.style.display = "flex";
         preview.classList.remove("show");
         metadataFileList.innerHTML = "";
+        if (pendingResultFileList) pendingResultFileList.innerHTML = "";
         return;
       }
 
@@ -2890,9 +2910,12 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
         ? selectedFiles.filter(file => !generatedResults.some(result => result && result.fileName === file.name))
         : selectedFiles;
 
-      uploadFileList.innerHTML = visibleUploadFiles.map(file => {
-        const index = selectedFiles.indexOf(file);
-        return `
+      if (generatedResults.length) {
+        uploadFileList.innerHTML = "";
+      } else {
+        uploadFileList.innerHTML = visibleUploadFiles.map(file => {
+          const index = selectedFiles.indexOf(file);
+          return `
         <div class="upload-file-row" data-upload-index="${index}">
           <div class="upload-file-thumb" data-upload-thumb>
             <div class="upload-file-thumb-fallback">
@@ -2913,16 +2936,19 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
           </div>
         </div>
         `;
-      }).join("");
+        }).join("");
+      }
 
       // Raster/SVG previews appear immediately; EPS is rendered asynchronously
       // without waiting for Generate All.
-      visibleUploadFiles.forEach(file => {
-        const index = selectedFiles.indexOf(file);
-        prepareCsvnestUploadPreview(file, index);
-      });
+      if (!generatedResults.length) {
+        visibleUploadFiles.forEach(file => {
+          const index = selectedFiles.indexOf(file);
+          prepareCsvnestUploadPreview(file, index);
+        });
+      }
 
-      uploadFileList.querySelectorAll("[data-upload-generate]").forEach(button => {
+      if (!generatedResults.length) uploadFileList.querySelectorAll("[data-upload-generate]").forEach(button => {
         const index = Number(button.getAttribute("data-upload-generate"));
         button.addEventListener("click", () => generateSingleUploadedFile(index, button));
       });
@@ -2979,8 +3005,23 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
       { id: "gemini-3.8-flash", label: "Gemini 3.8 Flash" },
       { id: "gemini-3.7-flash", label: "Gemini 3.7 Flash" },
       { id: "gemini-3.6-flash", label: "Gemini 3.6 Flash" },
-      { id: "gemini-3.5-flash-lite", label: "Gemini 3.5 Flash-Lite" }
+      { id: "gemini-3.5-flash-lite", label: "Gemini 3.5 Flash-Lite" },
+      { id: "gemini-3.1-flash-lite", label: "Gemini 3.1 Flash-Lite" },
+      { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash" }
     ];
+
+    function getSelectedGeminiModel() {
+      const saved = (localStorage.getItem("csvnest_gemini_model") || "").trim();
+      return GEMINI_MODELS.find(m => m.id === saved)?.id || GEMINI_MODELS[0].id;
+    }
+
+    function getGeminiModelOrder() {
+      const selected = getSelectedGeminiModel();
+      return [
+        ...GEMINI_MODELS.filter(m => m.id === selected),
+        ...GEMINI_MODELS.filter(m => m.id !== selected)
+      ];
+    }
 
     // Kept for compatibility with any existing code that reads GEMINI_MODEL.
     const GEMINI_MODEL = GEMINI_MODELS[0].id;
@@ -3265,7 +3306,7 @@ Requirements:
       const modelErrors = [];
 
       // Try every supported model until one actually works.
-      for (const model of GEMINI_MODELS) {
+      for (const model of getGeminiModelOrder()) {
         try {
           const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${model.id}:generateContent`,
@@ -3510,8 +3551,11 @@ Requirements:
         `;
       }).join("");
 
+      // Completed metadata is always rendered first; waiting files are rendered
+      // in a separate list directly underneath the completed cards.
       metadataFileList.innerHTML = generatedHtml;
-      uploadFileList.innerHTML = pendingHtml;
+      uploadFileList.innerHTML = "";
+      if (pendingResultFileList) pendingResultFileList.innerHTML = pendingHtml;
 
       metadataFileList.querySelectorAll(".result-card").forEach((card, index) => {
         const result = displayResults[index];
@@ -3615,7 +3659,7 @@ Requirements:
         regen?.addEventListener("click", () => regenerateSingleResult(result, results, index, regen));
       });
 
-      uploadFileList.querySelectorAll("[data-upload-generate]").forEach(button => {
+      (pendingResultFileList || uploadFileList).querySelectorAll("[data-upload-generate]").forEach(button => {
         const index = Number(button.getAttribute("data-upload-generate"));
         button.addEventListener("click", () => generateSingleUploadedFile(index, button));
       });
@@ -4164,6 +4208,17 @@ Requirements:
     const apiConfigHelp = document.getElementById("apiConfigHelp");
     const apiStoredCount = document.getElementById("apiStoredCount");
     const apiStoredHelp = document.getElementById("apiStoredHelp");
+    const geminiModelSelect = document.getElementById("geminiModelSelect");
+    if (geminiModelSelect) {
+      geminiModelSelect.value = getSelectedGeminiModel();
+      geminiModelSelect.addEventListener("change", () => {
+        localStorage.setItem("csvnest_gemini_model", geminiModelSelect.value);
+        if (typeof apiStatus !== "undefined" && apiStatus) {
+          const model = GEMINI_MODELS.find(m => m.id === geminiModelSelect.value);
+          apiStatus.textContent = `Gemini model selected: ${model?.label || geminiModelSelect.value}`;
+        }
+      });
+    }
     const geminiKeyList = document.getElementById("geminiKeyList");
     const groqKeyList = document.getElementById("groqKeyList");
     const apifyKeyList = document.getElementById("apifyKeyList");
@@ -4446,7 +4501,7 @@ Requirements:
 
         // A key is considered healthy if at least one of the supported
         // Gemini models accepts a small test request.
-        for (const model of GEMINI_MODELS) {
+        for (const model of getGeminiModelOrder()) {
           try {
             const response = await fetch(
               `https://generativelanguage.googleapis.com/v1beta/models/${model.id}:generateContent`,
