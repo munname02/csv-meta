@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CSV-META Metadata Generator</title>
+  <title>CSV-META Metadata Generator + VectorForge</title>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -2152,6 +2152,14 @@ body:not(.light-mode) .adobe-library-item button{background:#1b2020;color:#dfe5e
 body:not(.light-mode) .adobe-tracker-stat-value,
 body:not(.light-mode) .adobe-tracker-asset-title{color:#f0f4f2}
 
+
+/* Image to Prompt is a full navigation page, not a popup/modal. */
+.image-to-prompt-page-dialog{width:min(1180px,calc(100vw - 48px));max-height:none;overflow:visible;margin:24px auto 40px;}
+.image-to-prompt-page-dialog .image-to-prompt-close{font-size:0;}
+.image-to-prompt-page-dialog .image-to-prompt-close::after{content:"←";font-size:17px;}
+.image-to-prompt-modal{position:static;inset:auto;z-index:auto;display:block;padding:0;background:transparent;backdrop-filter:none;}
+.image-to-prompt-modal.show{display:block;}
+@media(max-width:760px){.image-to-prompt-page-dialog{width:calc(100vw - 24px);margin:12px auto 24px;}}
 </style>
 
 <script type="module">
@@ -2174,43 +2182,63 @@ window.CSVNestEPS = {
     return this.modulePromise;
   },
 
-  async toPNG(file) {
+  async toPNG(file, scaleFactor = 2) {
     const gs = await this.getModule();
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const input = "/csvnest_input.eps";
+    const ext = /\.ai$/i.test(file.name) ? ".ai" : ".eps";
+    const input = "/csvnest_input" + ext;
     const output = "/csvnest_output.png";
+    const factor = Math.max(1, Math.min(4, Number(scaleFactor) || 2));
 
     try {
       try { gs.FS.unlink(input); } catch (_) {}
       try { gs.FS.unlink(output); } catch (_) {}
-
       gs.FS.writeFile(input, bytes);
 
-      const code = await gs.callMain([
-        "-q",
-        "-dSAFER",
-        "-dBATCH",
-        "-dNOPAUSE",
-        "-dEPSCrop",
-        "-sDEVICE=pngalpha",
-        "-r144",
-        "-dGraphicsAlphaBits=4",
-        "-sOutputFile=" + output,
-        input
+      // First render at 72 PPI. For EPS/AI, this gives the artboard's
+      // native point-based pixel dimensions (e.g. 3000×2000).
+      const probe = "/csvnest_probe.png";
+      try { gs.FS.unlink(probe); } catch (_) {}
+      let probeCode = await gs.callMain([
+        "-q","-dSAFER","-dBATCH","-dNOPAUSE","-dEPSCrop",
+        "-sDEVICE=pngalpha","-r72","-dGraphicsAlphaBits=4",
+        "-sOutputFile="+probe,input
       ]);
+      if(probeCode && probeCode!==0) throw new Error("Could not read the AI/EPS artboard.");
 
-      if (code && code !== 0) {
-        throw new Error("Ghostscript EPS rendering failed (code " + code + ")");
-      }
+      const probePng = gs.FS.readFile(probe);
+      const probeBlob = new Blob([probePng],{type:"image/png"});
+      const probeUrl = URL.createObjectURL(probeBlob);
+      const probeImg = await new Promise((resolve,reject)=>{
+        const im=new Image();
+        im.onload=()=>{URL.revokeObjectURL(probeUrl);resolve(im)};
+        im.onerror=()=>{URL.revokeObjectURL(probeUrl);reject(new Error("Could not determine artboard size."))};
+        im.src=probeUrl;
+      });
+      const nativeW=probeImg.naturalWidth||probeImg.width;
+      const nativeH=probeImg.naturalHeight||probeImg.height;
+      try { gs.FS.unlink(probe); } catch (_) {}
 
-      const png = gs.FS.readFile(output);
-      const blob = new Blob([png], {type:"image/png"});
+      // Double the actual artboard dimensions.
+      const targetW=Math.round(nativeW*factor);
+      const targetH=Math.round(nativeH*factor);
+      // Since the probe is 72 PPI, 144 PPI produces exactly 2× dimensions.
+      const renderDpi=72*factor;
 
-      return new File(
-        [blob],
-        file.name.replace(/\.eps$/i, ".png"),
-        {type:"image/png"}
-      );
+      let code = await gs.callMain([
+        "-q","-dSAFER","-dBATCH","-dNOPAUSE","-dEPSCrop",
+        "-sDEVICE=pngalpha","-r"+renderDpi,"-dGraphicsAlphaBits=4",
+        "-sOutputFile="+output,input
+      ]);
+      if(code && code!==0) throw new Error("Ghostscript rendering failed (code "+code+")");
+
+      const png=gs.FS.readFile(output);
+      const blob=new Blob([png],{type:"image/png"});
+      const rendered=new File([blob],file.name.replace(/\.(eps|ai)$/i,".png"),{type:"image/png"});
+      rendered.nativeW=nativeW; rendered.nativeH=nativeH;
+      rendered.targetW=targetW; rendered.targetH=targetH;
+      rendered.renderDpi=renderDpi;
+      return rendered;
     } finally {
       try { gs.FS.unlink(input); } catch (_) {}
       try { gs.FS.unlink(output); } catch (_) {}
@@ -2330,19 +2358,135 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
   background:#171c1b;
   box-shadow:none;
 }
+
+/* ===== Image to Prompt ===== */
+.image-to-prompt-launch{position:absolute;right:24px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;gap:8px;padding:11px 16px;border:1px solid #3b4d6e;border-radius:10px;background:#121b2d;color:#eaf1ff;font-size:11px;font-weight:800;cursor:pointer;transition:.18s;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.image-to-prompt-launch:hover{border-color:#91a5ff;background:#18243b;transform:translateY(-50%) translateY(-1px)}
+.image-to-prompt-modal{position:fixed;inset:0;z-index:2500;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.74);backdrop-filter:blur(6px)}
+.image-to-prompt-modal.show{display:flex}
+.image-to-prompt-dialog{width:min(1180px,calc(100vw - 48px));max-height:none;overflow:visible;margin:24px auto 40px;border:1px solid #303b52;border-radius:16px;background:linear-gradient(145deg,#151b27,#0f141d);color:#edf2fb;box-shadow:0 30px 100px rgba(0,0,0,.55)}
+.image-to-prompt-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;padding:18px 20px;border-bottom:1px solid #273143}
+.image-to-prompt-title{font-size:16px;font-weight:900}.image-to-prompt-sub{margin-top:5px;color:#8793a8;font-size:9px;line-height:1.5}
+.image-to-prompt-close{width:30px;height:30px;border:1px solid #303b52;border-radius:8px;background:#1a2230;color:#aab5c8;font-size:17px;cursor:pointer}
+.image-to-prompt-body{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:18px}
+.image-to-prompt-panel{min-width:0;border:1px solid #2b3547;border-radius:12px;background:#111722;padding:12px}
+.image-to-prompt-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;color:#9aa7bb;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.image-to-prompt-drop{min-height:300px;display:flex;align-items:center;justify-content:center;text-align:center;border:1px dashed #3a465b;border-radius:10px;background:#0d131d;cursor:pointer;overflow:hidden}
+.image-to-prompt-drop.dragover{border-color:#55d6b2;background:#11231f}
+.image-to-prompt-placeholder{padding:30px;color:#758198;font-size:10px;line-height:1.7}.image-to-prompt-placeholder strong{display:block;color:#dce5f2;font-size:13px;margin-bottom:6px}
+.image-to-prompt-preview-grid{width:100%;height:300px;overflow:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:8px;align-content:start}
+.image-to-prompt-thumb{position:relative;min-width:0;height:88px;border:1px solid #344056;border-radius:8px;background:#080d15;overflow:hidden;cursor:default}
+.image-to-prompt-thumb img{width:100%;height:100%;object-fit:contain;display:block}
+.image-to-prompt-thumb span{position:absolute;left:4px;right:4px;bottom:4px;padding:3px 4px;border-radius:4px;background:rgba(0,0,0,.72);color:#eaf0f8;font-size:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.image-to-prompt-thumb b{position:absolute;right:4px;top:4px;padding:2px 5px;border-radius:5px;background:#162235;color:#9eead7;font-size:7px}
+.image-to-prompt-actions{display:flex;gap:7px;margin-top:9px}.image-to-prompt-btn{flex:1;padding:9px 11px;border:1px solid #344056;border-radius:8px;background:#202a3a;color:#e5ecf7;font-size:9px;font-weight:800;cursor:pointer}.image-to-prompt-btn.primary{background:#55d6b2;border-color:#55d6b2;color:#10201c}.image-to-prompt-btn:disabled{opacity:.5;cursor:wait}
+.image-to-prompt-output-list{height:390px;overflow:auto;display:flex;flex-direction:column;gap:9px}
+.image-to-prompt-result{border:1px solid #2d394d;border-radius:10px;background:#0b1018;padding:9px}.image-to-prompt-result-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}.image-to-prompt-result-name{font-size:8px;color:#aebbd0;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.image-to-prompt-result-status{font-size:7px;color:#6f7e94}.image-to-prompt-result textarea{width:100%;min-height:105px;resize:vertical;padding:9px;border:1px solid #344056;border-radius:8px;background:#090e16;color:#eaf0f8;font:500 9px/1.55 Inter,Arial,sans-serif;outline:none}.image-to-prompt-result-actions{display:flex;gap:6px;margin-top:6px}.image-to-prompt-result-actions button{flex:1;padding:7px;border:1px solid #344056;border-radius:7px;background:#172133;color:#dfe7f4;font-size:8px;font-weight:800;cursor:pointer}.image-to-prompt-result-actions button:hover{border-color:#55d6b2}
+.image-to-prompt-file-list{margin-top:10px;display:flex;flex-direction:column;gap:8px;max-height:330px;overflow:auto}.image-to-prompt-file-row{display:flex;align-items:center;gap:10px;padding:9px;border:1px solid #2d3948;border-radius:10px;background:#171c1b;min-height:64px}.image-to-prompt-file-thumb{width:72px;height:52px;flex:0 0 72px;border:1px solid #344056;border-radius:7px;background:#0b1119;overflow:hidden;display:flex;align-items:center;justify-content:center}.image-to-prompt-file-thumb img{width:100%;height:100%;object-fit:contain;display:block}.image-to-prompt-file-info{min-width:0;flex:1}.image-to-prompt-file-name{font-size:10px;font-weight:800;color:#dfe8f4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.image-to-prompt-file-meta{font-size:8px;color:#8997ad;margin-top:5px}.image-to-prompt-file-status{font-size:8px;color:#55d6b2;margin-top:3px}.image-to-prompt-file-actions{display:flex;align-items:center;gap:7px;flex:0 0 auto}.image-to-prompt-file-generate{border:1px solid #dce4ea;border-radius:8px;background:#eef3f4;color:#16201f;padding:8px 12px;font-size:9px;font-weight:800;cursor:pointer}.image-to-prompt-file-generate:disabled{opacity:.55;cursor:wait}.image-to-prompt-file-remove{width:30px;height:30px;border:1px solid #344056;border-radius:8px;background:#171f2b;color:#dbe5f0;font-size:16px;cursor:pointer}.image-to-prompt-file-list:empty{display:none}.image-to-prompt-preview-grid{display:none!important}.image-to-prompt-drop.has-files{min-height:118px}.image-to-prompt-drop.has-files .image-to-prompt-placeholder{padding:18px}.image-to-prompt-drop.has-files .image-to-prompt-placeholder strong{font-size:11px}
+.image-to-prompt-options{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.image-to-prompt-options select{flex:1;min-width:140px;padding:8px;border:1px solid #344056;border-radius:8px;background:#0d131d;color:#e8eef7;font-size:9px;outline:none}
+.image-to-prompt-status{min-height:14px;margin-top:8px;color:#7f8ca1;font-size:8px;line-height:1.4}
+.image-to-prompt-batch{margin-top:9px;padding:8px 10px;border:1px solid #2c394d;border-radius:8px;background:#0d131d;color:#8997ad;font-size:8px;line-height:1.5}
+@media(max-width:760px){.image-to-prompt-launch{position:static;transform:none;margin-left:auto}.image-to-prompt-launch:hover{transform:none}.image-to-prompt-body{grid-template-columns:1fr}.image-to-prompt-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.image-to-prompt-output-list{height:auto;max-height:520px}.mg-topbar{justify-content:stretch}.mg-nav{flex:1}}
+body.light-mode .image-to-prompt-file-row{background:#fff;border-color:#d5dce5}body.light-mode .image-to-prompt-file-name{color:#172033}body.light-mode .image-to-prompt-file-meta{color:#667085}body.light-mode .image-to-prompt-file-remove{background:#eef2f6;color:#344054;border-color:#d5dce5}body.light-mode .image-to-prompt-dialog{background:#f7f9fc;color:#172033;border-color:#dfe4eb}body.light-mode .image-to-prompt-head{border-bottom-color:#dfe4eb}body.light-mode .image-to-prompt-panel{background:#fff;border-color:#dfe4eb}body.light-mode .image-to-prompt-drop{background:#f7f9fc;border-color:#cbd5e1}body.light-mode .image-to-prompt-result{background:#fff;border-color:#d5dce5}body.light-mode .image-to-prompt-result textarea{background:#fff;color:#172033;border-color:#d5dce5}body.light-mode .image-to-prompt-btn,body.light-mode .image-to-prompt-result-actions button{background:#eef2f6;color:#344054;border-color:#d5dce5}
 </style>
+<style id="image-to-prompt-page-final">
+.image-to-prompt-page-dialog{width:min(1180px,calc(100vw - 48px));max-height:none;overflow:visible;margin:24px auto 40px;}
+.image-to-prompt-modal{position:static!important;inset:auto!important;z-index:auto!important;display:block!important;padding:0!important;background:transparent!important;backdrop-filter:none!important;}
+.image-to-prompt-modal.show{display:block!important;}
+.image-to-prompt-page-dialog .image-to-prompt-close{font-size:0;}
+.image-to-prompt-page-dialog .image-to-prompt-close::after{content:"←";font-size:17px;}
+@media(max-width:760px){.image-to-prompt-page-dialog{width:calc(100vw - 24px);margin:12px auto 24px;}}
+</style>
+<style id="ai-eps-jpg-page-css">
+.ai-eps-page{padding:20px 24px 40px;min-height:calc(100vh - 90px)}
+.ai-eps-shell{max-width:1180px;margin:0 auto}.ai-eps-card{background:linear-gradient(145deg,#15171c,#101216);border:1px solid #2a2e36;border-radius:14px;overflow:hidden;box-shadow:0 12px 35px rgba(0,0,0,.18)}
+.ai-eps-head{padding:20px;border-bottom:1px solid #2a2f38}.ai-eps-title{font-size:20px;font-weight:900}.ai-eps-sub{margin-top:5px;color:#8190a8;font-size:11px}.ai-eps-body{padding:20px}
+.ai-eps-drop{min-height:205px;border:1px dashed #303744;border-radius:13px;background:#191c22;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer}.ai-eps-drop.dragover{border-color:#55d6b2;background:#14241f}.ai-eps-drop input{display:none}.ai-eps-drop strong{display:block;color:#e9edf4;font-size:15px;margin:10px 0 6px}.ai-eps-drop span{color:#8190a8;font-size:10px}.ai-eps-badges{display:flex;gap:8px;justify-content:center}.ai-eps-badge{background:#f1f3f5;color:#20252c;padding:7px 12px;border-radius:15px;font-size:10px;font-weight:900}
+.ai-eps-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;padding:12px 14px;border:1px solid #2a2f38;border-radius:12px;background:#15181e}.ai-eps-count{color:#8d9ab0;font-size:11px}.ai-eps-count b{color:#55d6b2}.ai-eps-actions{display:flex;gap:8px;flex-wrap:wrap}.ai-eps-btn{border:0;border-radius:9px;padding:10px 15px;font-size:10px;font-weight:900;cursor:pointer;background:#242933;color:#e6ebf2}.ai-eps-btn.primary{background:#eef1f3;color:#1c222b}.ai-eps-btn.danger{color:#ff8e8e}.ai-eps-btn:disabled{opacity:.45;cursor:not-allowed}
+.ai-eps-settings{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}.ai-eps-setting{display:flex;align-items:center;gap:7px;color:#9ba8bc;font-size:10px}.ai-eps-setting input{width:75px;padding:8px;border:1px solid #303744;border-radius:7px;background:#101319;color:#e8edf5}.ai-eps-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}.ai-eps-item{border:1px solid #2b3039;border-radius:11px;background:#171a20;overflow:hidden}.ai-eps-thumb{height:180px;background:#0e1116;display:flex;align-items:center;justify-content:center}.ai-eps-thumb img{max-width:100%;max-height:100%;object-fit:contain}.ai-eps-file{padding:11px}.ai-eps-name{font-size:10px;font-weight:800;color:#e4e9f1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ai-eps-meta{font-size:8px;color:#7f8ca2;margin-top:5px}.ai-eps-status{font-size:8px;color:#55d6b2;margin-top:5px}.ai-eps-item button{width:100%;margin-top:9px;padding:8px;border:1px solid #303744;border-radius:7px;background:#222731;color:#e4e9f1;font-size:9px;font-weight:800;cursor:pointer}.ai-eps-empty{min-height:350px;display:flex;align-items:center;justify-content:center;text-align:center;color:#78859a;font-size:12px}.ai-eps-empty b{display:block;color:#e5eaf2;font-size:16px;margin-bottom:7px}
+.ai-eps-note{margin-top:14px;padding:11px;border:1px dashed #303744;border-radius:9px;color:#78859a;font-size:9px;line-height:1.6}.ai-eps-progress{height:5px;background:#252a33;border-radius:4px;margin-top:7px;overflow:hidden}.ai-eps-progress i{display:block;height:100%;width:0;background:#55d6b2}
+@media(max-width:900px){.ai-eps-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.ai-eps-page{padding:12px 10px 28px}.ai-eps-body{padding:12px}.ai-eps-grid{grid-template-columns:1fr}.ai-eps-toolbar{align-items:flex-start;flex-direction:column}.ai-eps-thumb{height:210px}}
+</style>
+
 </head>
 
 <body>
+</div>
+
+
+
+<!-- ===== AI/EPS → JPG page ===== -->
+<div class="mg-page" id="aiEpsJpgPage">
+  <div class="ai-eps-page"><div class="ai-eps-shell"><div class="ai-eps-card">
+    <div class="ai-eps-head"><div class="ai-eps-title">▧ AI/EPS to JPG</div><div class="ai-eps-sub">High-quality local batch conversion at 150 PPI</div></div>
+    <div class="ai-eps-body">
+      <label class="ai-eps-drop" id="aiEpsDrop">
+        <input id="aiEpsInput" type="file" multiple accept=".ai,.eps,application/postscript,application/illustrator">
+        <div><div style="font-size:34px">▧</div><div class="ai-eps-badges"><span class="ai-eps-badge">AI</span><span class="ai-eps-badge">EPS</span></div><strong>Drag &amp; drop files, or <u>browse</u></strong><span>Up to 100 files per session (150 PPI JPG Output)</span></div>
+      </label>
+      <div class="ai-eps-toolbar"><div class="ai-eps-count"><b id="aiEpsCount">0 file(s)</b> &nbsp; <span id="aiEpsSize">0 MB</span> &nbsp; <span id="aiEpsProcessed">✓ 0 processed</span></div><div class="ai-eps-actions"><button class="ai-eps-btn danger" id="aiEpsClear">♲ Clear</button><button class="ai-eps-btn primary" id="aiEpsConvert" disabled>▧ Convert (0)</button><button class="ai-eps-btn" id="aiEpsZip" disabled>⇩ Download All (ZIP)</button></div></div>
+      <div class="ai-eps-settings"><label class="ai-eps-setting">PPI <input id="aiEpsPpi" type="number" min="72" max="600" value="150"></label><label class="ai-eps-setting">JPG Quality <input id="aiEpsQuality" type="number" min="50" max="100" value="95"></label></div>
+      <div id="aiEpsGrid" class="ai-eps-grid"><div class="ai-eps-empty" style="grid-column:1/-1"><div><b>No files yet</b>Upload AI or EPS files to convert them to JPG.</div></div></div>
+      <div class="ai-eps-note"><b>Note:</b> AI/EPS are rendered in the browser using Ghostscript WASM. No local Node.js converter server is required. PPI is used for the vector render, then the final JPG is fitted to exactly 2× artboard size at high quality. A stable internet connection is required to load the Ghostscript WASM module.</div>
+    </div>
+  </div></div></div>
+</div>
 
 <header class="mg-topbar">
   <nav class="mg-nav" aria-label="Main navigation">
     <button type="button" class="mg-nav-btn active" data-page="metadata"><span class="mg-nav-icon">▱</span><span class="mg-nav-label">Stock Metadata</span></button>
     <button type="button" class="mg-nav-btn" data-page="search"><span class="mg-nav-icon">⌕</span><span class="mg-nav-label">Stock Search</span></button>
+    <button type="button" class="mg-nav-btn" data-page="imagePrompt"><span class="mg-nav-icon">✦</span><span class="mg-nav-label">Image to Prompt</span></button>
+    <button type="button" class="mg-nav-btn" data-page="aiEpsJpg"><span class="mg-nav-icon">▧</span><span class="mg-nav-label">AI/EPS → JPG</span></button>
   </nav>
 </header>
 
-  <div class="mg-page active" id="stockMetadataPage">
+  
+<!-- ===== Image to Prompt page ===== -->
+<div class="mg-page" id="imageToPromptPage">
+  <div class="image-to-prompt-dialog image-to-prompt-page-dialog" role="region" aria-labelledby="imageToPromptTitle">
+    <div class="image-to-prompt-head">
+      <div>
+        <div class="image-to-prompt-title" id="imageToPromptTitle">✦ Image to Prompt</div>
+        <div class="image-to-prompt-sub">Upload multiple design screenshots. Generate original image-generation prompts for 5–10 images with one click.</div>
+      </div>
+      <button type="button" class="image-to-prompt-close" id="imageToPromptClose" aria-label="Back to Stock Metadata">×</button>
+    </div>
+    <div class="image-to-prompt-body">
+      <div class="image-to-prompt-panel">
+        <div class="image-to-prompt-label"><span>Reference Images</span><span id="imageToPromptFileCount">0 / 10</span></div>
+        <div class="image-to-prompt-drop" id="imageToPromptDrop">
+          <div class="image-to-prompt-placeholder" id="imageToPromptPlaceholder"><strong>Upload up to 10 design screenshots</strong>Drag & drop multiple images here or click to browse<br>PNG, JPG, WEBP supported</div>
+          <div class="image-to-prompt-preview-grid" id="imageToPromptPreviewGrid" style="display:none"></div>
+        </div>
+        <input type="file" id="imageToPromptInput" hidden multiple accept="image/*">
+        <div class="image-to-prompt-file-list" id="imageToPromptFileList"></div>
+        <div class="image-to-prompt-options">
+          <select id="imageToPromptStyle"><option value="faithful">Faithful recreation prompt</option><option value="vector">Clean vector / stock prompt</option><option value="lineart">Minimal line-art prompt</option><option value="tshirt">T-shirt / POD prompt</option></select>
+          <select id="imageToPromptDetail"><option value="detailed">Detailed</option><option value="balanced">Balanced</option><option value="concise">Concise</option></select>
+        </div>
+        <div class="image-to-prompt-actions">
+          <button type="button" class="image-to-prompt-btn" id="imageToPromptClear">Clear All</button>
+          <button type="button" class="image-to-prompt-btn primary" id="imageToPromptGenerate">✦ Generate All</button>
+        </div>
+        <div class="image-to-prompt-batch" id="imageToPromptBatch">Select up to 10 images. All prompts will be generated from the same settings.</div>
+        <div class="image-to-prompt-status" id="imageToPromptStatus"></div>
+      </div>
+      <div class="image-to-prompt-panel">
+        <div class="image-to-prompt-label"><span>Generated Prompts</span><span id="imageToPromptCharCount">0</span></div>
+        <div class="image-to-prompt-output-list" id="imageToPromptOutputList">
+          <div class="image-to-prompt-placeholder"><strong>No prompts yet</strong>Upload 5–10 images and click Generate All.</div>
+        </div>
+        <div class="image-to-prompt-actions">
+          <button type="button" class="image-to-prompt-btn" id="imageToPromptCopyAll">Copy All Prompts</button>
+          <button type="button" class="image-to-prompt-btn" id="imageToPromptUseAll">Use All as Extra Instruction</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mg-page active" id="stockMetadataPage">
   <div class="app">
     
 
@@ -2948,10 +3092,7 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
         });
       }
 
-      if (!generatedResults.length) uploadFileList.querySelectorAll("[data-upload-generate]").forEach(button => {
-        const index = Number(button.getAttribute("data-upload-generate"));
-        button.addEventListener("click", () => generateSingleUploadedFile(index, button));
-      });
+      // Individual Generate buttons are handled by one delegated listener below.
     }
 
     function removeFile(index) {
@@ -3054,6 +3195,163 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
         reader.readAsDataURL(file);
       });
     }
+
+
+    // ===== Image to Prompt (multi-image batch) =====
+    (() => {
+      const launch = document.getElementById("imageToPromptLaunch");
+      const modal = document.getElementById("imageToPromptModal");
+      const close = document.getElementById("imageToPromptClose");
+      const drop = document.getElementById("imageToPromptDrop");
+      const input = document.getElementById("imageToPromptInput");
+      const placeholder = document.getElementById("imageToPromptPlaceholder");
+      const previewGrid = document.getElementById("imageToPromptPreviewGrid");
+      const fileList = document.getElementById("imageToPromptFileList");
+      const fileCount = document.getElementById("imageToPromptFileCount");
+      const outputList = document.getElementById("imageToPromptOutputList");
+      const status = document.getElementById("imageToPromptStatus");
+      const batch = document.getElementById("imageToPromptBatch");
+      const generate = document.getElementById("imageToPromptGenerate");
+      const clear = document.getElementById("imageToPromptClear");
+      const copyAll = document.getElementById("imageToPromptCopyAll");
+      const useAll = document.getElementById("imageToPromptUseAll");
+      const count = document.getElementById("imageToPromptCharCount");
+      const styleSelect = document.getElementById("imageToPromptStyle");
+      const detailSelect = document.getElementById("imageToPromptDetail");
+      let referenceFiles = [];
+      let results = [];
+
+      const MAX_IMAGES = 10;
+      function setStatus(message, error=false){ status.textContent = message || ""; status.style.color = error ? "#f0a6aa" : "#7f8ca1"; }
+      function open(){ if(typeof window.csvMetaShowPage === "function") window.csvMetaShowPage("imagePrompt"); else { modal?.classList.add("show"); modal?.setAttribute("aria-hidden","false"); } }
+      function closeModal(){ if(typeof window.csvMetaShowPage === "function") window.csvMetaShowPage("metadata"); else { modal?.classList.remove("show"); modal?.setAttribute("aria-hidden","true"); } }
+      function updateCount(){ count.textContent = String(results.reduce((n,r)=>n+String(r.prompt||"").length,0)); }
+      function formatFileSize(bytes){
+        if(bytes < 1024) return bytes + " B";
+        if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + " KB";
+        return (bytes/(1024*1024)).toFixed(1) + " MB";
+      }
+      function renderPreview(){
+        fileCount.textContent = `${referenceFiles.length} / ${MAX_IMAGES}`;
+        const hasFiles = referenceFiles.length > 0;
+        placeholder.style.display = hasFiles ? "none" : "block";
+        previewGrid.style.display = "none";
+        drop.classList.toggle("has-files", hasFiles);
+        if(!hasFiles){
+          fileList.innerHTML = "";
+        } else {
+          fileList.innerHTML = referenceFiles.map((item,i)=>{
+            const r = results[i] || {status:"Ready",prompt:""};
+            const statusText = r.status === "Done" ? "Prompt ready" : r.status === "Generating…" ? "Generating…" : r.status === "Failed" ? "Generation failed" : "Preview ready";
+            const buttonText = r.status === "Done" ? "✓ Generated" : r.status === "Generating…" ? "⏳ Generating..." : "✦ Generate";
+            return `<div class="image-to-prompt-file-row" data-file-index="${i}">
+              <div class="image-to-prompt-file-thumb"><img src="${item.url}" alt=""></div>
+              <div class="image-to-prompt-file-info">
+                <div class="image-to-prompt-file-name" title="${escapeHtml(item.name)}">▧ &nbsp; ${escapeHtml(item.name)}</div>
+                <div class="image-to-prompt-file-meta">${formatFileSize(item.file.size)}</div>
+                <div class="image-to-prompt-file-status">${statusText}</div>
+              </div>
+              <div class="image-to-prompt-file-actions">
+                <button type="button" class="image-to-prompt-file-generate" data-file-generate="${i}" ${r.status === "Generating…" ? "disabled" : ""}>${buttonText}</button>
+                <button type="button" class="image-to-prompt-file-remove" data-file-remove="${i}" aria-label="Remove image">×</button>
+              </div>
+            </div>`;
+          }).join("");
+        }
+        batch.textContent = hasFiles
+          ? `${referenceFiles.length} image${referenceFiles.length===1?'':'s'} selected. Generate one image or use Generate All.`
+          : "Select up to 10 images. Generate one image or use Generate All.";
+        fileList.querySelectorAll("[data-file-remove]").forEach(b=>b.addEventListener("click",()=>removeFile(Number(b.dataset.fileRemove))));
+        fileList.querySelectorAll("[data-file-generate]").forEach(b=>b.addEventListener("click",()=>generateSingle(Number(b.dataset.fileGenerate),b)));
+      }
+      function removeFile(index){
+        const item=referenceFiles[index];
+        if(!item) return;
+        try{URL.revokeObjectURL(item.url)}catch(_){ }
+        referenceFiles.splice(index,1);
+        if(results.length) results.splice(index,1);
+        renderPreview();
+        renderResults();
+        setStatus(referenceFiles.length ? `${referenceFiles.length} image${referenceFiles.length===1?'':'s'} ready.` : "");
+      }
+      function addFiles(files){
+        const incoming = Array.from(files||[]).filter(f=>String(f.type||"").startsWith("image/"));
+        if(!incoming.length){ setStatus("Please choose PNG, JPG, WEBP or another image file.",true); return; }
+        const room = MAX_IMAGES-referenceFiles.length;
+        const chosen = incoming.slice(0,room);
+        chosen.forEach(file=>{ referenceFiles.push({file,url:URL.createObjectURL(file),name:file.name}); results.push({name:file.name,prompt:"",status:"Ready"}); });
+        if(incoming.length>room) setStatus(`Only ${MAX_IMAGES} images are allowed. The first ${room} were added.` ,true); else setStatus(`${referenceFiles.length} image${referenceFiles.length===1?'':'s'} ready.`);
+        renderPreview();
+      }
+      function reset(){ referenceFiles.forEach(x=>{try{URL.revokeObjectURL(x.url)}catch(_){}}); referenceFiles=[]; results=[]; input.value=""; renderPreview(); outputList.innerHTML='<div class="image-to-prompt-placeholder"><strong>No prompts yet</strong>Upload 5–10 images and click Generate All.</div>'; updateCount(); setStatus(""); }
+      function renderResults(){
+        if(!results.length){ outputList.innerHTML='<div class="image-to-prompt-placeholder"><strong>No prompts yet</strong>Upload 5–10 images and click Generate All.</div>'; updateCount(); return; }
+        outputList.innerHTML=results.map((r,i)=>`<div class="image-to-prompt-result" data-result-index="${i}"><div class="image-to-prompt-result-head"><span class="image-to-prompt-result-name" title="${escapeHtml(r.name)}">${i+1}. ${escapeHtml(r.name)}</span><span class="image-to-prompt-result-status">${r.status||''}</span></div><textarea data-prompt-index="${i}" placeholder="Generated prompt...">${escapeHtml(r.prompt||"")}</textarea><div class="image-to-prompt-result-actions"><button type="button" data-copy-index="${i}">Copy</button><button type="button" data-use-index="${i}">Use as Instruction</button></div></div>`).join("");
+        outputList.querySelectorAll("textarea[data-prompt-index]").forEach(t=>t.addEventListener("input",()=>{const i=Number(t.dataset.promptIndex);if(results[i]) results[i].prompt=t.value;updateCount();}));
+        outputList.querySelectorAll("[data-copy-index]").forEach(b=>b.addEventListener("click",async()=>{const r=results[Number(b.dataset.copyIndex)];if(!r?.prompt)return;try{await navigator.clipboard.writeText(r.prompt);setStatus(`Copied prompt ${Number(b.dataset.copyIndex)+1}.`)}catch{window.prompt("Copy Prompt:",r.prompt)}}));
+        outputList.querySelectorAll("[data-use-index]").forEach(b=>b.addEventListener("click",()=>{const r=results[Number(b.dataset.useIndex)];const instruction=document.getElementById("instruction");if(!r?.prompt||!instruction)return;instruction.value=r.prompt;instruction.dispatchEvent(new Event("input",{bubbles:true}));setStatus(`Prompt ${Number(b.dataset.useIndex)+1} added to Extra instruction.`)}));
+        updateCount();
+      }
+      async function generateOne(item, index, apiKey, style, detail){
+        const base64=await fileToBase64(item.file);
+        const prompt=`You are an expert prompt engineer for AI image generation. Analyze this uploaded design image and create ONE original, production-ready image-generation prompt that captures its visible visual concept without copying brand-specific or copyrighted identifiers.\n\nPrompt mode: ${style}\nDetail level: ${detail}\n\nDescribe visible subject, composition, spacing, framing/aspect ratio, line quality, typography and readable text, colors, shapes, ornaments, icons, ribbons, flowers, decorative elements, background, negative space, vector/print characteristics, edges, shading and texture, and important layout relationships.\n\nCreate an ORIGINAL prompt. Do not mention the reference image, screenshot, source, designer, marketplace, brand, artist or copyright. Do not invent details. Avoid artist/style names. Preserve readable wording only when clearly visible. Return only the final prompt as plain text, with no heading, bullets or quotation marks.`;
+        let text="", errors=[];
+        for(const model of getGeminiModelOrder()){
+          try{
+            const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model.id}:generateContent`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":apiKey},body:JSON.stringify({contents:[{parts:[{inlineData:{mimeType:item.file.type,data:base64}},{text:prompt}]}],generationConfig:{temperature:0.35}})});
+            const data=await response.json().catch(()=>({}));
+            if(!response.ok){errors.push(`${model.label}: ${data?.error?.message||response.status}`);continue;}
+            text=data?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("").trim()||"";
+            if(text) break; errors.push(`${model.label}: empty response`);
+          }catch(err){errors.push(`${model.label}: ${err?.message||err}`)}
+        }
+        if(!text) throw new Error(errors.join("\n")||"Gemini returned an empty response.");
+        return text;
+      }
+      async function generateSingle(index, button){
+        const item=referenceFiles[index];
+        if(!item) return;
+        const apiKey=typeof getSavedApiKey==="function"?getSavedApiKey():"";
+        if(!apiKey){if(typeof openApiModal==="function")openApiModal();setStatus("Add your Gemini API key first.",true);return;}
+        const style=styleSelect.value, detail=detailSelect.value;
+        results[index]={name:item.name,prompt:"",status:"Generating…"};
+        renderPreview();
+        renderResults();
+        setStatus(`Generating ${index+1} / ${referenceFiles.length}: ${item.name}`);
+        try{
+          results[index].prompt=await generateOne(item,index,apiKey,style,detail);
+          results[index].status="Done";
+          setStatus(`Completed: ${item.name}`);
+        }catch(err){
+          results[index].status="Failed";
+          results[index].prompt=`Generation failed: ${err?.message||err}`;
+          setStatus(`Failed: ${item.name}`,true);
+        }
+        renderPreview();
+        renderResults();
+      }
+      async function generateAll(){
+        if(!referenceFiles.length){setStatus("Upload at least one reference image first.",true);return;}
+        const apiKey=typeof getSavedApiKey==="function"?getSavedApiKey():"";
+        if(!apiKey){if(typeof openApiModal==="function")openApiModal();setStatus("Add your Gemini API key first.",true);return;}
+        generate.disabled=true;clear.disabled=true;results=referenceFiles.map(x=>({name:x.name,prompt:"",status:"Waiting…"}));renderPreview();renderResults();
+        const style=styleSelect.value,detail=detailSelect.value; let completed=0;
+        setStatus(`Generating 0 / ${referenceFiles.length} prompts…`);
+        // Batch concurrency of 3: one click generates the whole batch while reducing rate-limit spikes.
+        let cursor=0;
+        const worker=async()=>{while(true){const i=cursor++;if(i>=referenceFiles.length)return;results[i].status="Generating…";renderPreview();renderResults();try{results[i].prompt=await generateOne(referenceFiles[i],i,apiKey,style,detail);results[i].status="Done";}catch(err){results[i].status="Failed";results[i].prompt=`Generation failed: ${err?.message||err}`;}completed++;setStatus(`Generating ${completed} / ${referenceFiles.length} prompts…`);renderPreview();renderResults();}};
+        try{await Promise.all(Array.from({length:Math.min(3,referenceFiles.length)},()=>worker()));setStatus(`Completed ${completed} / ${referenceFiles.length} prompts.`);}finally{generate.disabled=false;clear.disabled=false;}
+      }
+      launch?.addEventListener("click",open); close?.addEventListener("click",closeModal);
+      document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("imageToPromptPage")?.classList.contains("active"))closeModal();});
+      drop?.addEventListener("click",()=>input.click()); input?.addEventListener("change",e=>{addFiles(e.target.files);input.value="";});
+      ["dragenter","dragover"].forEach(type=>drop?.addEventListener(type,e=>{e.preventDefault();drop.classList.add("dragover")}));
+      ["dragleave","drop"].forEach(type=>drop?.addEventListener(type,e=>{e.preventDefault();drop.classList.remove("dragover")}));
+      drop?.addEventListener("drop",e=>addFiles(e.dataTransfer.files));
+      clear?.addEventListener("click",reset); generate?.addEventListener("click",generateAll);
+      copyAll?.addEventListener("click",async()=>{const text=results.filter(r=>r.prompt&&!r.prompt.startsWith("Generation failed:")).map((r,i)=>`[${i+1}] ${r.name}\n${r.prompt}`).join("\n\n");if(!text)return;try{await navigator.clipboard.writeText(text);setStatus("All prompts copied to clipboard.")}catch{window.prompt("Copy All Prompts:",text)}});
+      useAll?.addEventListener("click",()=>{const instruction=document.getElementById("instruction");const text=results.filter(r=>r.prompt&&!r.prompt.startsWith("Generation failed:")).map(r=>r.prompt).join("\n\n---\n\n");if(!text||!instruction)return;instruction.value=text;instruction.dispatchEvent(new Event("input",{bubbles:true}));setStatus("All generated prompts added to Extra instruction.")});
+    })();
 
     function escapeHtml(value) {
       return String(value ?? "")
@@ -3659,12 +3957,23 @@ Requirements:
         regen?.addEventListener("click", () => regenerateSingleResult(result, results, index, regen));
       });
 
-      (pendingResultFileList || uploadFileList).querySelectorAll("[data-upload-generate]").forEach(button => {
-        const index = Number(button.getAttribute("data-upload-generate"));
-        button.addEventListener("click", () => generateSingleUploadedFile(index, button));
-      });
+      // Individual Generate buttons are handled by one delegated listener below.
     }
 
+
+    // Use event delegation so the per-file Generate button keeps working
+    // after the result/pending lists are re-rendered. This is important because
+    // Generate All and single-file generation both rebuild these containers.
+    document.addEventListener("click", event => {
+      const button = event.target.closest("[data-upload-generate]");
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (button.disabled) return;
+
+      const index = Number(button.getAttribute("data-upload-generate"));
+      generateSingleUploadedFile(index, button);
+    });
 
     // Generate metadata for one uploaded file without generating the rest.
     async function generateSingleUploadedFile(index, button) {
@@ -5087,36 +5396,196 @@ Requirements:
 })();
 
 </script>
+<script>
+(function(){
+  const input=document.getElementById('aiEpsInput'),
+        drop=document.getElementById('aiEpsDrop'),
+        grid=document.getElementById('aiEpsGrid'),
+        count=document.getElementById('aiEpsCount'),
+        size=document.getElementById('aiEpsSize'),
+        processed=document.getElementById('aiEpsProcessed'),
+        convert=document.getElementById('aiEpsConvert'),
+        zipBtn=document.getElementById('aiEpsZip'),
+        clear=document.getElementById('aiEpsClear');
+  let files=[];
 
+  const fmt=n=>n<1024?`${n} B`:n<1048576?`${(n/1024).toFixed(1)} KB`:`${(n/1048576).toFixed(2)} MB`;
 
+  function render(){
+    const done=files.filter(f=>f.done).length;
+    count.textContent=files.length+' file(s)';
+    size.textContent=fmt(files.reduce((a,f)=>a+f.size,0));
+    processed.textContent='✓ '+done+' processed';
+    convert.disabled=!files.length;
+    convert.textContent='▧ Convert ('+files.length+')';
+    zipBtn.disabled=!done;
 
+    if(!files.length){
+      grid.innerHTML='<div class="ai-eps-empty" style="grid-column:1/-1"><div><b>No files yet</b>Upload AI or EPS files to convert them to JPG.</div></div>';
+      return;
+    }
+
+    grid.innerHTML='';
+    files.forEach((f,i)=>{
+      const el=document.createElement('div');
+      el.className='ai-eps-item';
+      el.innerHTML=
+        '<div class="ai-eps-thumb" id="thumb'+i+'"><span style="color:#667085;font-size:10px">AI / EPS</span></div>'+
+        '<div class="ai-eps-file">'+
+        '<div class="ai-eps-name" title="'+f.name.replace(/"/g,'&quot;')+'">'+f.name+'</div>'+
+        '<div class="ai-eps-meta">'+fmt(f.size)+' • '+(f.done?(f.dimensions+' • '+f.ppi+' PPI'):'Ready')+'</div>'+
+        '<div class="ai-eps-status">'+(f.error?'Error: '+f.error:(f.done?'Done':'Waiting'))+'</div>'+
+        '<button data-i="'+i+'" '+(f.done?'':'disabled')+'>⇩ Download JPG</button></div>';
+      grid.appendChild(el);
+      if(f.preview){
+        const im=document.createElement('img');
+        im.src=f.preview;
+        im.alt='';
+        el.querySelector('.ai-eps-thumb').innerHTML='';
+        el.querySelector('.ai-eps-thumb').appendChild(im);
+      }
+    });
+    grid.querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>downloadOne(files[+b.dataset.i]));
+  }
+
+  function add(list){
+    for(const f of list){
+      if(files.length>=100)break;
+      if(!/\.(ai|eps)$/i.test(f.name))continue;
+      if(!files.some(x=>x.name===f.name&&x.size===f.size))
+        files.push({file:f,name:f.name,size:f.size,done:false,error:''});
+    }
+    render();
+  }
+
+  input.onchange=()=>add(input.files);
+  ['dragenter','dragover'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.add('dragover')}));
+  ['dragleave','drop'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.remove('dragover')}));
+  drop.addEventListener('drop',e=>add(e.dataTransfer.files));
+  clear.onclick=()=>{
+    files.forEach(f=>{if(f.preview)URL.revokeObjectURL(f.preview);});
+    files=[];render();
+  };
+
+  async function rasterizeToJpg(item){
+    const quality=Math.max(.5,Math.min(1,Number(document.getElementById('aiEpsQuality').value||95)/100));
+
+    if(!window.CSVNestEPS || !window.CSVNestEPS.toPNG)
+      throw new Error('Ghostscript renderer could not be loaded. Check your internet connection and reload the page.');
+
+    // The requested output is always 2× the actual AI/EPS artboard.
+    const pngFile=await window.CSVNestEPS.toPNG(item.file,2);
+
+    const img=await new Promise((resolve,reject)=>{
+      const u=URL.createObjectURL(pngFile),im=new Image();
+      im.onload=()=>{URL.revokeObjectURL(u);resolve(im)};
+      im.onerror=()=>{URL.revokeObjectURL(u);reject(new Error('Rendered image could not be decoded.'))};
+      im.src=u;
+    });
+
+    // Use the exact rendered artboard dimensions. Do not force 3000×2000.
+    const OUT_W=pngFile.targetW || img.naturalWidth || img.width;
+    const OUT_H=pngFile.targetH || img.naturalHeight || img.height;
+
+    const canvas=document.createElement('canvas');
+    canvas.width=OUT_W; canvas.height=OUT_H;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,OUT_W,OUT_H);
+    ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+    ctx.drawImage(img,0,0,OUT_W,OUT_H);
+
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+    if(!blob)throw new Error('JPG encoding failed.');
+
+    item.output=blob;
+    item.preview=URL.createObjectURL(blob);
+    item.ppi=pngFile.renderDpi || 144;
+    item.dimensions=`${OUT_W} × ${OUT_H} px`;
+    item.done=true;
+    item.error='';
+  }
+  async function convertOne(item){
+    item.error='';render();
+    try{
+      await rasterizeToJpg(item);
+    }catch(e){
+      item.error=e?.message||'Conversion failed';
+    }
+    render();
+  }
+
+  convert.onclick=async()=>{
+    convert.disabled=true;
+    for(const f of files){
+      if(!f.done)await convertOne(f);
+    }
+    render();
+  };
+
+  function downloadOne(f){
+    if(!f.output)return;
+    const u=URL.createObjectURL(f.output),a=document.createElement('a');
+    a.href=u;a.download=f.name.replace(/\.(ai|eps)$/i,'')+'.jpg';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u),1500);
+  }
+
+  // ZIP export using JSZip CDN. This is optional; individual JPG downloads still work without it.
+  zipBtn.onclick=async()=>{
+    const done=files.filter(f=>f.done&&f.output);
+    if(!done.length)return;
+    try{
+      if(!window.JSZip){
+        const s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+        document.head.appendChild(s);
+        await new Promise((resolve,reject)=>{s.onload=resolve;s.onerror=()=>reject(new Error('Could not load ZIP library.'))});
+      }
+      const zip=new JSZip();
+      done.forEach(f=>zip.file(f.name.replace(/\.(ai|eps)$/i,'')+'.jpg',f.output));
+      const blob=await zip.generateAsync({type:'blob'});
+      const u=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=u;a.download='AI_EPS_to_JPG.zip';document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(u),1500);
+    }catch(e){alert('ZIP error: '+e.message)}
+  };
+
+  render();
+})();
+</script>
 
 <script>
 (function(){
   const buttons=[...document.querySelectorAll('.mg-nav-btn')];
   const pages={
     metadata:document.getElementById('stockMetadataPage'),
-    search:document.getElementById('stockSearchPage')
+    search:document.getElementById('stockSearchPage'),
+    imagePrompt:document.getElementById('imageToPromptPage'),
+    aiEpsJpg:document.getElementById('aiEpsJpgPage')
   };
-  function showPage(name, push=true){
-    Object.entries(pages).forEach(([k,p])=>p && p.classList.toggle('active',k===name));
+  const hashFor={metadata:'stock-metadata',search:'stock-search',imagePrompt:'image-to-prompt',aiEpsJpg:'ai-eps-jpg'};
+  function showPage(name,push=true){
+    if(!pages[name]) name='metadata';
+    Object.entries(pages).forEach(([k,p])=>p&&p.classList.toggle('active',k===name));
     buttons.forEach(b=>b.classList.toggle('active',b.dataset.page===name));
-    if(name==='search'){
-      const panel=document.getElementById('adobeTrackerPanel');
-      if(panel) panel.classList.add('show');
-      document.body.classList.add('stock-search-active');
-    }else document.body.classList.remove('stock-search-active');
-    if(push){try{history.pushState({page:name},'', '#'+(name==='search'?'stock-search':'stock-metadata'));}catch(_){} }
+    const panel=document.getElementById('adobeTrackerPanel');
+    if(name==='search'){if(panel) panel.classList.add('show');document.body.classList.add('stock-search-active');}
+    else document.body.classList.remove('stock-search-active');
+    if(push){try{history.pushState({page:name},'', '#'+hashFor[name]);}catch(_){} }
     window.scrollTo({top:0,behavior:'smooth'});
   }
+  window.csvMetaShowPage=showPage;
   buttons.forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
-  window.addEventListener('popstate',()=>{
-    const h=(location.hash||'').replace('#','');
-    showPage(h==='stock-search'?'search':'metadata',false);
-  });
+  function pageFromHash(h){
+    h=(h||'').replace('#','');
+    if(h==='stock-search') return 'search';
+    if(h==='image-to-prompt') return 'imagePrompt';
+    if(h==='ai-eps-jpg') return 'aiEpsJpg';
+    return 'metadata';
+  }
+  window.addEventListener('popstate',()=>showPage(pageFromHash(location.hash),false));
   const h=(location.hash||'').replace('#','');
-  if(h==='stock-search') showPage('search',false);
-  else showPage('metadata',false);
+  showPage(pageFromHash(h),false);
 })();
 </script>
 </body>
