@@ -2160,6 +2160,72 @@ body:not(.light-mode) .adobe-tracker-asset-title{color:#f0f4f2}
 .image-to-prompt-modal{position:static;inset:auto;z-index:auto;display:block;padding:0;background:transparent;backdrop-filter:none;}
 .image-to-prompt-modal.show{display:block;}
 @media(max-width:760px){.image-to-prompt-page-dialog{width:calc(100vw - 24px);margin:12px auto 24px;}}
+
+/* ===== Background Remover ===== */
+.bg-remover-page{padding:22px 24px 40px;max-width:1500px;margin:0 auto;color:#edf2fb}
+.bg-remover-shell{display:grid;grid-template-columns:420px minmax(0,1fr);gap:14px;align-items:stretch}
+.bg-remover-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.bg-remover-icon{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg,#1d2940,#111827);border:1px solid #3a4b69;color:#eef5ff;font-size:25px;box-shadow:0 10px 28px rgba(0,0,0,.25)}
+.bg-remover-title{font-size:22px;font-weight:900;line-height:1.1}
+.bg-remover-sub{margin-top:5px;color:#8793a8;font-size:10px;line-height:1.5}
+.bg-remover-card{background:linear-gradient(145deg,#111827,#0e141f);border:1px solid #263149;border-radius:16px;box-shadow:0 18px 55px rgba(0,0,0,.24);overflow:hidden}
+.bg-remover-card-head{display:flex;align-items:center;gap:10px;padding:15px 16px;border-bottom:1px solid #263149;font-size:12px;font-weight:900}
+.bg-remover-card-head .ico{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:#202a3b;color:#aebbd0}
+.bg-upload{margin:14px;height:220px;border:1px dashed #3a4a67;border-radius:12px;background:#111824;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;cursor:pointer;transition:.18s}
+.bg-upload:hover,.bg-upload.dragover{border-color:var(--green);background:#12231f;box-shadow:0 0 0 2px rgba(85,214,178,.08)}
+.bg-upload-icon{width:58px;height:58px;border-radius:16px;display:grid;place-items:center;background:#172033;border:1px solid #2b3954;color:#8d9ab1;font-size:28px}
+.bg-upload strong{font-size:13px;color:#edf2fb}
+.bg-upload strong span{color:var(--green)}
+.bg-upload p{margin:0;color:#74829a;font-size:9px;line-height:1.5}
+.bg-types{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+.bg-types span{padding:6px 10px;border-radius:999px;background:#202b3d;color:#e2e8f3;font-size:8px;font-weight:800}
+.bg-file-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:0 14px 12px}
+.bg-thumb{position:relative;aspect-ratio:1;border:1px solid #2b3950;border-radius:10px;overflow:hidden;background:#0c121c;cursor:pointer}
+.bg-thumb.active{border-color:var(--green);box-shadow:0 0 0 2px rgba(85,214,178,.12)}
+.bg-thumb img{width:100%;height:100%;object-fit:contain;display:block}
+.bg-thumb .x{position:absolute;right:4px;top:4px;width:20px;height:20px;border-radius:50%;background:rgba(20,25,34,.9);color:#fff;font-size:13px;display:grid;place-items:center;border:1px solid #566174}
+.bg-actions{display:grid;grid-template-columns:1fr 1.8fr;gap:8px;padding:0 14px 14px}
+.bg-btn{min-height:40px;border:1px solid #34435d;border-radius:9px;background:#182235;color:#dfe7f4;font-size:10px;font-weight:900;cursor:pointer}
+.bg-btn:hover{filter:brightness(1.12)}
+.bg-btn.primary{background:var(--green);color:#09201a;border-color:var(--green);box-shadow:0 8px 20px rgba(85,214,178,.16)}
+.bg-btn:disabled{opacity:.5;cursor:not-allowed}
+.bg-settings{margin:0 14px 14px;padding:13px;border:1px solid #28354c;border-radius:11px;background:#101722}
+.bg-settings-title{font-size:10px;font-weight:900;margin-bottom:11px}
+.bg-setting{display:grid;grid-template-columns:1fr 170px;align-items:center;gap:10px;margin-top:9px}
+.bg-setting label{color:#93a0b5;font-size:9px}
+.bg-setting select{width:100%;padding:9px;border-radius:8px;border:1px solid #34425a;background:#0d141f;color:#e9eef7;outline:none}
+.bg-toggle{justify-self:end;width:34px;height:19px;border-radius:20px;background:#293449;padding:2px;cursor:pointer}
+.bg-toggle::after{content:"";display:block;width:15px;height:15px;border-radius:50%;background:#718096;transition:.18s}
+.bg-toggle.on{background:#327d6a}.bg-toggle.on::after{transform:translateX(15px);background:#fff}
+.bg-preview-card{min-width:0;display:flex;flex-direction:column}
+.bg-preview-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #263149}
+.bg-preview-toolbar strong{font-size:12px}.bg-preview-tools{display:flex;gap:5px}
+.bg-tool{width:34px;height:32px;border:1px solid #34435d;border-radius:8px;background:#172033;color:#cbd5e6;font-weight:900}
+.bg-tool.zoom{width:auto;padding:0 11px;font-size:9px}
+.bg-canvas-wrap{position:relative;flex:1;min-height:560px;margin:14px;border-radius:12px;overflow:hidden;border:1px solid #29364d;background:
+linear-gradient(45deg,#d7dbe1 25%,transparent 25%,transparent 75%,#d7dbe1 75%),
+linear-gradient(45deg,#d7dbe1 25%,transparent 25%,transparent 75%,#d7dbe1 75%);
+background-position:0 0,8px 8px;background-size:16px 16px;background-color:#eef1f4;display:flex;align-items:center;justify-content:center}
+.bg-empty{color:#66758e;text-align:center;font-size:11px}.bg-empty b{display:block;color:#aab5c7;font-size:14px;margin-bottom:6px}
+.bg-image-stage{position:absolute;display:none;overflow:visible;transform-origin:center center}
+.bg-stage-img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block}
+.bg-result{z-index:1}
+.bg-original-layer{position:absolute;inset:0;z-index:2;overflow:hidden}
+.bg-original-layer .bg-stage-img{position:absolute}
+.bg-slider{position:absolute;z-index:5;top:0;bottom:0;left:50%;width:3px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.12);display:none;cursor:ew-resize}
+.bg-slider-handle{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:48px;height:48px;border-radius:50%;background:#fff;border:1px solid #dce1e8;box-shadow:0 5px 18px rgba(0,0,0,.22);display:grid;place-items:center;color:#586273;font-size:18px}
+.bg-label{position:absolute;z-index:6;bottom:12px;padding:6px 10px;border-radius:999px;background:rgba(12,18,28,.85);border:1px solid #38465e;color:#dfe7f3;font-size:8px;font-weight:800;display:none}
+.bg-label.left{left:12px}.bg-label.right{right:12px;background:rgba(23,61,51,.9);border-color:#3b8f79}
+.bg-preview-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid #263149}
+.bg-counter{color:#8491a7;font-size:9px}.bg-bottom-actions{display:flex;gap:7px}
+.bg-status{margin:0 14px 12px;color:#8290a6;font-size:9px;min-height:14px}
+.bg-progress{height:5px;background:#202b3d;border-radius:5px;overflow:hidden;margin:0 14px 12px;display:none}
+.bg-progress i{display:block;width:0;height:100%;background:var(--green);transition:width .2s}
+.bg-credit-note{padding:0 14px 13px;color:#66758b;font-size:8px;line-height:1.45}
+@media(max-width:1000px){.bg-remover-shell{grid-template-columns:360px minmax(0,1fr)}.bg-canvas-wrap{min-height:480px}}
+@media(max-width:800px){.bg-remover-page{padding:14px 10px 30px}.bg-remover-shell{grid-template-columns:1fr}.bg-canvas-wrap{min-height:420px}.bg-setting{grid-template-columns:1fr 150px}}
+@media(max-width:600px){.bg-remover-head{align-items:flex-start}.bg-remover-title{font-size:19px}.bg-file-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.bg-preview-bottom{flex-direction:column;align-items:stretch}.bg-bottom-actions{display:grid;grid-template-columns:1fr 1fr}.bg-setting{grid-template-columns:1fr}.bg-toggle{justify-self:start}}
+
 </style>
 
 <script type="module">
@@ -2301,14 +2367,14 @@ body:not(.light-mode) .adobe-tracker-panel{
 .mg-brand-icon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#ff8a00,#ff5f00);color:#fff;font-size:22px;font-weight:900;box-shadow:0 8px 22px rgba(255,128,0,.24)}
 .mg-brand-name{font-size:20px;font-weight:900;line-height:1;color:#f6f7fb}.mg-brand-name small{display:block;margin-top:6px;font-size:10px;font-weight:500;color:#8993a8}
 .mg-free{display:inline-block;margin-left:5px;padding:4px 7px;border-radius:999px;background:#2d1d08;color:#ffae39;border:1px solid #70410b;font-size:8px;vertical-align:middle}
-.mg-nav{display:flex;align-items:stretch;gap:2px;padding:3px;border:1px solid #263149;border-radius:15px;background:#101728;min-width:420px;max-width:560px}
-.mg-nav-btn{position:relative;flex:1;min-width:180px;min-height:58px;padding:8px 18px;border:0;border-radius:12px;background:transparent;color:#98a4ba;font-size:14px;font-weight:800;cursor:pointer;transition:.18s}
+.mg-nav{display:flex;align-items:stretch;gap:2px;padding:3px;border:1px solid #263149;border-radius:15px;background:#101728;width:min(760px,calc(100vw - 48px));min-width:0;max-width:760px;box-sizing:border-box}
+.mg-nav-btn{position:relative;flex:1 1 0;min-width:0;min-height:58px;padding:8px 18px;border:0;border-radius:12px;background:transparent;color:#98a4ba;font-size:14px;font-weight:800;cursor:pointer;transition:.18s}
 .mg-nav-btn:hover{color:#e8edf7;background:#182136}.mg-nav-btn.active{color:#0b1715;background:var(--green);box-shadow:0 8px 22px rgba(85,214,178,.24)}
 .mg-nav-icon{display:block;font-size:17px;line-height:1;margin-bottom:4px}.mg-nav-label{display:block}
 .mg-page{display:none!important}.mg-page.active{display:block!important}
 #stockMetadataPage.active{display:block!important}.mg-main-wrap{width:100%}
 #stockSearchPage{padding:0 0 30px}
-@media(max-width:1100px){.mg-topbar{gap:14px}.mg-nav{min-width:360px}.mg-nav-btn{min-width:120px;font-size:12px}}
+@media(max-width:1100px){.mg-topbar{gap:14px}.mg-nav{width:min(700px,calc(100vw - 28px))}.mg-nav-btn{min-width:0;font-size:12px}}
 @media(max-width:760px){.mg-topbar{flex-wrap:wrap;padding:12px}.mg-nav{width:100%;min-width:0}.mg-nav-btn{min-width:0;min-height:50px;padding:6px 8px;font-size:11px}.mg-brand-name small{display:none}}
 body:not(.light-mode) .mg-topbar{background:rgba(13,16,25,.96)}
 body.light-mode .mg-topbar{background:rgba(255,255,255,.96);border-bottom-color:#dfe4eb}.body.light-mode .mg-brand-name{color:#172033}
@@ -2411,6 +2477,16 @@ body.light-mode .image-to-prompt-file-row{background:#fff;border-color:#d5dce5}b
 </head>
 
 <body>
+<header class="mg-topbar">
+  <nav class="mg-nav" aria-label="Main navigation">
+    <button type="button" class="mg-nav-btn active" data-page="metadata"><span class="mg-nav-icon">▱</span><span class="mg-nav-label">Stock Metadata</span></button>
+    <button type="button" class="mg-nav-btn" data-page="search"><span class="mg-nav-icon">⌕</span><span class="mg-nav-label">Stock Search</span></button>
+    <button type="button" class="mg-nav-btn" data-page="imagePrompt"><span class="mg-nav-icon">✦</span><span class="mg-nav-label">Image to Prompt</span></button>
+    <button type="button" class="mg-nav-btn" data-page="aiEpsJpg"><span class="mg-nav-icon">▧</span><span class="mg-nav-label">AI/EPS → JPG</span></button>
+    <button type="button" class="mg-nav-btn" data-page="backgroundRemover"><span class="mg-nav-icon">⌫</span><span class="mg-nav-label">Background Remover</span></button>
+  </nav>
+</header>
+
 </div>
 
 
@@ -2432,16 +2508,77 @@ body.light-mode .image-to-prompt-file-row{background:#fff;border-color:#d5dce5}b
   </div></div></div>
 </div>
 
-<header class="mg-topbar">
-  <nav class="mg-nav" aria-label="Main navigation">
-    <button type="button" class="mg-nav-btn active" data-page="metadata"><span class="mg-nav-icon">▱</span><span class="mg-nav-label">Stock Metadata</span></button>
-    <button type="button" class="mg-nav-btn" data-page="search"><span class="mg-nav-icon">⌕</span><span class="mg-nav-label">Stock Search</span></button>
-    <button type="button" class="mg-nav-btn" data-page="imagePrompt"><span class="mg-nav-icon">✦</span><span class="mg-nav-label">Image to Prompt</span></button>
-    <button type="button" class="mg-nav-btn" data-page="aiEpsJpg"><span class="mg-nav-icon">▧</span><span class="mg-nav-label">AI/EPS → JPG</span></button>
-  </nav>
-</header>
 
   
+
+<!-- ===== Background Remover page ===== -->
+<div class="mg-page" id="backgroundRemoverPage">
+  <div class="bg-remover-page">
+    <div class="bg-remover-head">
+      <div class="bg-remover-icon">⌫</div>
+      <div>
+        <div class="bg-remover-title">Background Remover</div>
+        <div class="bg-remover-sub">Remove image backgrounds instantly with AI. Upload multiple images and get transparent PNG results.</div>
+      </div>
+    </div>
+
+    <div class="bg-remover-shell">
+      <section class="bg-remover-card">
+        <div class="bg-remover-card-head"><div class="ico">⇧</div><span>Upload Images</span></div>
+        <label class="bg-upload" id="bgUpload">
+          <input id="bgInput" type="file" accept="image/png,image/jpeg,image/webp,image/jpg" multiple hidden>
+          <div class="bg-upload-icon">▧</div>
+          <strong>Drag &amp; drop images here, or click <span>browse</span></strong>
+          <p>Supports JPG, PNG, WEBP, JPEG<br>Max 10 MB per image • Up to 500 images</p>
+          <div class="bg-types"><span>PNG</span><span>JPG</span><span>WEBP</span><span>JPEG</span></div>
+        </label>
+        <div class="bg-file-grid" id="bgFileGrid"></div>
+        <div class="bg-actions">
+          <button type="button" class="bg-btn" id="bgClear">♲ &nbsp; Clear All</button>
+          <button type="button" class="bg-btn primary" id="bgRemove">✧ &nbsp; Remove Background</button>
+        </div>
+        <div class="bg-settings">
+          <div class="bg-settings-title">⚙ Settings</div>
+          <div class="bg-setting"><label>Output Format</label><select id="bgFormat"><option value="png">PNG (Transparent)</option></select></div>
+          <div class="bg-setting"><label>Image Quality</label><select id="bgQuality"><option>High (Best Quality)</option><option>Standard</option></select></div>
+          <div class="bg-setting"><label>Remove Shadows</label><div class="bg-toggle on" id="bgShadow"></div></div>
+          <div class="bg-setting"><label>Keep Original Size</label><div class="bg-toggle on" id="bgOriginalSize"></div></div>
+          <div class="bg-setting"><label>Batch Processing</label><div class="bg-toggle on" id="bgBatch"></div></div>
+        </div>
+        <div class="bg-credit-note">Processing runs in your browser using an AI background-removal model. The first run may download the model and take longer.</div>
+      </section>
+
+      <section class="bg-remover-card bg-preview-card">
+        <div class="bg-preview-toolbar">
+          <div><strong>◉ &nbsp; Preview</strong><div class="bg-remover-sub">Compare original and background-removed result. Drag the slider to view.</div></div>
+          <div class="bg-preview-tools"><button class="bg-tool" id="bgZoomOut">−</button><button class="bg-tool zoom" id="bgZoom">100%</button><button class="bg-tool" id="bgZoomIn">+</button><button class="bg-tool" id="bgFit">Fit</button></div>
+        </div>
+        <div class="bg-canvas-wrap" id="bgCanvasWrap">
+          <div class="bg-empty" id="bgEmpty"><b>No images yet</b>Upload images to remove backgrounds in bulk.</div>
+          <div class="bg-image-stage" id="bgImageStage">
+            <img class="bg-stage-img bg-result" id="bgResultImg" alt="Background removed result">
+            <div class="bg-original-layer" id="bgOriginalLayer"><img class="bg-stage-img" id="bgOriginalImg" alt="Original image"></div>
+            <div class="bg-slider" id="bgSlider"><div class="bg-slider-handle">‹›</div></div>
+          </div>
+          <div class="bg-label left" id="bgLeftLabel">Original (With Background)</div>
+          <div class="bg-label right" id="bgRightLabel">Result (Transparent Background)</div>
+        </div>
+        <div class="bg-progress" id="bgProgress"><i></i></div>
+        <div class="bg-status" id="bgStatus"></div>
+        <div class="bg-preview-bottom">
+          <div class="bg-counter" id="bgCounter">0 / 0</div>
+          <div class="bg-bottom-actions">
+            <button class="bg-btn" id="bgPrev">←</button>
+            <button class="bg-btn" id="bgNext">→</button>
+            <button class="bg-btn primary" id="bgDownload">⇩ &nbsp; Download</button>
+            <button class="bg-btn" id="bgDownloadZip">⇩ &nbsp; Download All (ZIP)</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
 <!-- ===== Image to Prompt page ===== -->
 <div class="mg-page" id="imageToPromptPage">
   <div class="image-to-prompt-dialog image-to-prompt-page-dialog" role="region" aria-labelledby="imageToPromptTitle">
@@ -5554,6 +5691,190 @@ Requirements:
 })();
 </script>
 
+
+<script type="module">
+/* ===== Browser AI Background Remover ===== */
+(function(){
+  const input=document.getElementById('bgInput');
+  const upload=document.getElementById('bgUpload');
+  const grid=document.getElementById('bgFileGrid');
+  const clearBtn=document.getElementById('bgClear');
+  const removeBtn=document.getElementById('bgRemove');
+  const resultImg=document.getElementById('bgResultImg');
+  const originalImg=document.getElementById('bgOriginalImg');
+  const empty=document.getElementById('bgEmpty');
+  const slider=document.getElementById('bgSlider');
+  const wrap=document.getElementById('bgCanvasWrap');
+  const counter=document.getElementById('bgCounter');
+  const status=document.getElementById('bgStatus');
+  const progress=document.getElementById('bgProgress');
+  const progressBar=progress?.querySelector('i');
+  const download=document.getElementById('bgDownload');
+  const zipBtn=document.getElementById('bgDownloadZip');
+  const prev=document.getElementById('bgPrev');
+  const next=document.getElementById('bgNext');
+  const zoom=document.getElementById('bgZoom');
+  const leftLabel=document.getElementById('bgLeftLabel');
+  const rightLabel=document.getElementById('bgRightLabel');
+  if(!input||!upload)return;
+
+  const files=[];
+  let selected=0, scale=1, removeBackgroundFn=null, loadingLib=null;
+
+  function escapeHtml(v){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function sync(){
+    grid.innerHTML='';
+    files.forEach((f,i)=>{
+      const d=document.createElement('div'); d.className='bg-thumb'+(i===selected?' active':'');
+      d.title=f.file.name;
+      d.innerHTML=`<img src="${f.originalUrl}" alt=""><button type="button" class="x">×</button>`;
+      d.querySelector('.x').onclick=e=>{e.stopPropagation();files.splice(i,1);if(selected>=files.length)selected=Math.max(0,files.length-1);sync();showSelected();};
+      d.onclick=()=>{selected=i;sync();showSelected();};
+      grid.appendChild(d);
+    });
+    counter.textContent=`${files.length?selected+1:0} / ${files.length}`;
+    download.disabled=!files[selected]?.output;
+    zipBtn.disabled=!files.some(x=>x.output);
+  }
+  function addFiles(list){
+    [...list].forEach(file=>{
+      if(!/^image\/(png|jpeg|webp|jpg)$/i.test(file.type))return;
+      if(file.size>10*1024*1024)return;
+      files.push({file,originalUrl:URL.createObjectURL(file),output:null,outputUrl:null});
+    });
+    if(files.length)selected=Math.min(selected,files.length-1);
+    sync();showSelected();
+  }
+  upload.addEventListener('click',()=>input.click());
+  input.addEventListener('change',()=>{addFiles(input.files);input.value='';});
+  ['dragenter','dragover'].forEach(ev=>upload.addEventListener(ev,e=>{e.preventDefault();upload.classList.add('dragover');}));
+  ['dragleave','drop'].forEach(ev=>upload.addEventListener(ev,e=>{e.preventDefault();upload.classList.remove('dragover');}));
+  upload.addEventListener('drop',e=>addFiles(e.dataTransfer.files));
+  clearBtn.onclick=()=>{files.forEach(f=>{URL.revokeObjectURL(f.originalUrl);if(f.outputUrl)URL.revokeObjectURL(f.outputUrl)});files.length=0;selected=0;sync();showSelected();status.textContent='';};
+  function showSelected(){
+    const f=files[selected];
+    const stage=document.getElementById('bgImageStage');
+    const originalLayer=document.getElementById('bgOriginalLayer');
+    if(!f){
+      empty.style.display='block'; stage.style.display='none';
+      originalImg.style.display=resultImg.style.display=slider.style.display=leftLabel.style.display=rightLabel.style.display='none';
+      return;
+    }
+    empty.style.display='none';
+    originalImg.src=f.originalUrl;
+    originalImg.style.display='block';
+    if(f.outputUrl){
+      resultImg.src=f.outputUrl;
+      resultImg.style.display='block';
+      stage.style.display='block';
+      slider.style.display='block';
+      leftLabel.style.display=rightLabel.style.display='block';
+      positionStage();
+      setSlider(.5);
+    }else{
+      resultImg.removeAttribute('src'); resultImg.style.display='none';
+      stage.style.display='block';
+      originalLayer.style.clipPath='none';
+      slider.style.display=leftLabel.style.display=rightLabel.style.display='none';
+      positionStage();
+    }
+    counter.textContent=`${selected+1} / ${files.length}`;
+    download.disabled=!f.output;
+  }
+  let sliderRatio=.5;
+  function positionStage(){
+    const wr=wrap.getBoundingClientRect();
+    const nw=originalImg.naturalWidth||1, nh=originalImg.naturalHeight||1;
+    const pad=20;
+    const cw=Math.max(1,wr.width-pad*2), ch=Math.max(1,wr.height-pad*2);
+    const fit=Math.min(cw/nw,ch/nh);
+    const iw=Math.max(1,nw*fit), ih=Math.max(1,nh*fit);
+    const stage=document.getElementById('bgImageStage');
+    stage.style.width=iw+'px'; stage.style.height=ih+'px';
+    stage.style.left=(pad+(cw-iw)/2)+'px'; stage.style.top=(pad+(ch-ih)/2)+'px';
+    stage.style.display='block';
+  }
+  function setSlider(r){
+    r=Math.max(0,Math.min(1,r)); sliderRatio=r;
+    positionStage();
+    const stage=document.getElementById('bgImageStage');
+    const originalLayer=document.getElementById('bgOriginalLayer');
+    const w=stage.getBoundingClientRect().width;
+    const x=w*r;
+    slider.style.left=x+'px';
+    slider.style.top='0px';
+    slider.style.height='100%';
+    originalLayer.style.clipPath=`inset(0 ${Math.max(0,w-x)}px 0 0)`;
+  }
+  let dragging=false;
+  function pointerX(e){
+    const stage=document.getElementById('bgImageStage');
+    const sr=stage.getBoundingClientRect();
+    return (e.clientX-sr.left)/Math.max(1,sr.width);
+  }
+  slider.addEventListener('pointerdown',e=>{dragging=true;slider.setPointerCapture(e.pointerId);e.preventDefault();});
+  slider.addEventListener('pointermove',e=>{if(dragging)setSlider(pointerX(e));});
+  slider.addEventListener('pointerup',()=>dragging=false);
+  slider.addEventListener('pointercancel',()=>dragging=false);
+  wrap.addEventListener('pointerdown',e=>{
+    if(e.target===slider||slider.contains(e.target))return;
+    if(files[selected]?.output){setSlider(pointerX(e));}
+  });
+  window.addEventListener('resize',()=>{if(files[selected]){positionStage();if(files[selected]?.output)setSlider(sliderRatio);}});
+  originalImg.addEventListener('load',()=>{if(files[selected]){positionStage();if(files[selected]?.output)setSlider(sliderRatio);}});
+
+  async function loadModel(){
+    if(removeBackgroundFn)return removeBackgroundFn;
+    if(loadingLib)return loadingLib;
+    loadingLib=import('https://cdn.jsdelivr.net/npm/@imgly/background-removal/+esm').then(mod=>mod.removeBackground||mod.default).catch(e=>{loadingLib=null;throw e;});
+    return loadingLib;
+  }
+  async function processOne(f){
+    const fn=await loadModel();
+    const blob=await fn(f.file,{output:{format:'image/png',type:'foreground'}}).catch(async()=>await fn(f.file));
+    f.output=blob; if(f.outputUrl)URL.revokeObjectURL(f.outputUrl); f.outputUrl=URL.createObjectURL(blob);
+  }
+  removeBtn.onclick=async()=>{
+    if(!files.length)return;
+    removeBtn.disabled=true; progress.style.display='block'; status.textContent='Loading AI model…';
+    try{
+      for(let i=0;i<files.length;i++){
+        status.textContent=`Removing background: ${i+1} / ${files.length} — ${escapeHtml(files[i].file.name)}`;
+        progressBar.style.width=((i/files.length)*100)+'%';
+        await processOne(files[i]);
+        progressBar.style.width=(((i+1)/files.length)*100)+'%';
+        sync();showSelected();
+      }
+      status.textContent=`Completed ${files.length} image${files.length>1?'s':''}. Transparent PNG results are ready.`;
+    }catch(e){status.textContent='Background removal failed: '+(e?.message||e);}
+    finally{removeBtn.disabled=false;setTimeout(()=>{progress.style.display='none';},700);}
+  };
+  download.onclick=()=>{
+    const f=files[selected];if(!f?.output)return;
+    const a=document.createElement('a');a.href=f.outputUrl;a.download=f.file.name.replace(/\.[^.]+$/,'')+'-no-bg.png';document.body.appendChild(a);a.click();a.remove();
+  };
+  zipBtn.onclick=async()=>{
+    const done=files.filter(f=>f.output);
+    if(!done.length)return;
+    try{
+      if(!window.JSZip){
+        const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';document.head.appendChild(sc);
+        await new Promise((res,rej)=>{sc.onload=res;sc.onerror=()=>rej(new Error('Could not load ZIP library.'));});
+      }
+      const zip=new JSZip();done.forEach(f=>zip.file(f.file.name.replace(/\.[^.]+$/,'')+'-no-bg.png',f.output));
+      const blob=await zip.generateAsync({type:'blob'});const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='background-removed-images.zip';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1200);
+    }catch(e){status.textContent='ZIP export failed: '+e.message;}
+  };
+  prev.onclick=()=>{if(files.length){selected=(selected-1+files.length)%files.length;sync();showSelected();}};
+  next.onclick=()=>{if(files.length){selected=(selected+1)%files.length;sync();showSelected();}};
+  document.getElementById('bgZoomOut').onclick=()=>{scale=Math.max(.5,scale-.1);zoom.textContent=Math.round(scale*100)+'%';};
+  document.getElementById('bgZoomIn').onclick=()=>{scale=Math.min(2,scale+.1);zoom.textContent=Math.round(scale*100)+'%';};
+  document.getElementById('bgZoom').onclick=()=>{scale=1;zoom.textContent='100%';};
+  document.getElementById('bgFit').onclick=()=>{scale=1;zoom.textContent='Fit';setTimeout(()=>zoom.textContent='100%',800);};
+  sync();showSelected();
+})();
+</script>
+
 <script>
 (function(){
   const buttons=[...document.querySelectorAll('.mg-nav-btn')];
@@ -5561,9 +5882,10 @@ Requirements:
     metadata:document.getElementById('stockMetadataPage'),
     search:document.getElementById('stockSearchPage'),
     imagePrompt:document.getElementById('imageToPromptPage'),
-    aiEpsJpg:document.getElementById('aiEpsJpgPage')
+    aiEpsJpg:document.getElementById('aiEpsJpgPage'),
+    backgroundRemover:document.getElementById('backgroundRemoverPage')
   };
-  const hashFor={metadata:'stock-metadata',search:'stock-search',imagePrompt:'image-to-prompt',aiEpsJpg:'ai-eps-jpg'};
+  const hashFor={metadata:'stock-metadata',search:'stock-search',imagePrompt:'image-to-prompt',aiEpsJpg:'ai-eps-jpg',backgroundRemover:'background-remover'};
   function showPage(name,push=true){
     if(!pages[name]) name='metadata';
     Object.entries(pages).forEach(([k,p])=>p&&p.classList.toggle('active',k===name));
@@ -5581,6 +5903,7 @@ Requirements:
     if(h==='stock-search') return 'search';
     if(h==='image-to-prompt') return 'imagePrompt';
     if(h==='ai-eps-jpg') return 'aiEpsJpg';
+    if(h==='background-remover') return 'backgroundRemover';
     return 'metadata';
   }
   window.addEventListener('popstate',()=>showPage(pageFromHash(location.hash),false));
