@@ -1271,6 +1271,15 @@ body:not(.light-mode) .result-regenerate-btn{
     .csvnest-api-close{width:26px;height:26px;border-radius:6px;background:transparent;color:#8c9592;font-size:18px;cursor:pointer;}
     .csvnest-api-close:hover{background:#202525;color:#fff;}
     .gemini-api-model-picker{margin:7px 0 4px;} .gemini-api-model-picker select{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #39413f;border-radius:8px;background:#111515;color:#f0f2f1;font:600 12px Inter,sans-serif;outline:none;} .gemini-api-model-picker select:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(85,214,178,.12);} .gemini-api-model-help{font-size:9px;color:#78817f;margin-top:5px;}
+    .csvnest-model-add-row{display:flex;gap:6px;margin-top:9px;}
+    .csvnest-model-add-row input{flex:1;min-width:0;width:0;padding:9px 10px;border:1px solid #39413f;border-radius:7px;background:#101414;color:#f0f2f1;font:10px Inter,sans-serif;outline:none;}
+    .csvnest-model-add-row input:focus{border-color:var(--green);}
+    .csvnest-model-add-row button{flex:0 0 auto;padding:8px 9px;font-size:9px;white-space:nowrap;}
+    .csvnest-custom-model-list{display:flex;flex-direction:column;gap:5px;margin-top:7px;}
+    .csvnest-custom-model-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px;border:1px solid #303735;border-radius:6px;background:#111515;color:#cfd7d4;font-size:9px;}
+    .csvnest-custom-model-item span{min-width:0;overflow-wrap:anywhere;}
+    .csvnest-custom-model-item button{padding:3px 7px;border:1px solid #594044;border-radius:5px;background:#2b1b1e;color:#e3a2a5;font-size:9px;flex:0 0 auto;}
+
 .csvnest-api-provider-tabs{display:flex;gap:5px;padding:10px 18px 0;}
     .csvnest-api-provider-tab{padding:8px 12px;border:1px solid #303735;border-radius:7px 7px 0 0;background:#171b1b;color:#8d9794;font-size:9px;font-weight:800;cursor:pointer;}
     .csvnest-api-provider-tab.active{background:#202b31;color:#fff;border-color:#3d6d80;}
@@ -2439,7 +2448,7 @@ body.light-mode .mg-nav-btn.active{color:#0b1715;background:var(--green);box-sha
 .image-to-prompt-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;color:#9aa7bb;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
 .image-to-prompt-drop{min-height:300px;display:flex;align-items:center;justify-content:center;text-align:center;border:1px dashed #3a465b;border-radius:10px;background:#0d131d;cursor:pointer;overflow:hidden}
 .image-to-prompt-drop.dragover{border-color:#55d6b2;background:#11231f}
-.image-to-prompt-placeholder{padding:30px;color:#758198;font-size:10px;line-height:1.7}.image-to-prompt-placeholder strong{display:block;color:#dce5f2;font-size:13px;margin-bottom:6px}
+.image-to-prompt-placeholder{padding:30px;color:#758198;font-size:10px;line-height:1.7}.image-to-prompt-placeholder strong{display:block;color:#dce5f2;font-size:13px;margin-bottom:6px}.image-to-prompt-paste-hint{display:inline-flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;padding:8px 12px;border:1px solid #354767;border-radius:8px;background:#162238;color:#b9c9e8;font-size:9px;font-weight:800}.image-to-prompt-paste-hint::before{content:"＋";color:#55d6b2;font-size:13px} .image-to-prompt-drop:focus-visible{outline:2px solid #55d6b2;outline-offset:3px}
 .image-to-prompt-preview-grid{width:100%;height:300px;overflow:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:8px;align-content:start}
 .image-to-prompt-thumb{position:relative;min-width:0;height:88px;border:1px solid #344056;border-radius:8px;background:#080d15;overflow:hidden;cursor:default}
 .image-to-prompt-thumb img{width:100%;height:100%;object-fit:contain;display:block}
@@ -2474,6 +2483,16 @@ body.light-mode .image-to-prompt-file-row{background:#fff;border-color:#d5dce5}b
 @media(max-width:900px){.ai-eps-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.ai-eps-page{padding:12px 10px 28px}.ai-eps-body{padding:12px}.ai-eps-grid{grid-template-columns:1fr}.ai-eps-toolbar{align-items:flex-start;flex-direction:column}.ai-eps-thumb{height:210px}}
 </style>
 
+
+<style id="csvnest-upscaler-css">
+.upscale-page{padding:20px 24px 40px;min-height:calc(100vh - 90px)}.upscale-shell{max-width:1180px;margin:0 auto}.upscale-card{background:linear-gradient(145deg,#15171c,#101216);border:1px solid #2a2e36;border-radius:14px;overflow:hidden;box-shadow:0 12px 35px rgba(0,0,0,.18)}.upscale-head{padding:20px;border-bottom:1px solid #2a2f38}.upscale-title{font-size:20px;font-weight:900;color:#eef2f8}.upscale-sub{margin-top:5px;color:#8190a8;font-size:11px;line-height:1.6}.upscale-body{padding:20px}.upscale-drop{min-height:210px;border:1px dashed #394354;border-radius:13px;background:#191c22;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;padding:20px}.upscale-drop.dragover{border-color:#55d6b2;background:#14241f}.upscale-drop input{display:none}.upscale-drop strong{display:block;color:#e9edf4;font-size:15px;margin:10px 0 6px}.upscale-drop span{color:#8190a8;font-size:10px}.upscale-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;padding:12px;border:1px solid #2a2f38;border-radius:12px;background:#15181e}.upscale-controls label{display:flex;align-items:center;gap:7px;color:#9ba8bc;font-size:10px}.upscale-controls select{padding:9px;border:1px solid #303744;border-radius:7px;background:#101319;color:#e8edf5}.upscale-btn{border:1px solid #303744;border-radius:8px;padding:10px 14px;font-size:10px;font-weight:900;cursor:pointer;background:#242933;color:#e6ebf2}.upscale-btn.primary{background:#55d6b2;color:#09241c;border-color:#55d6b2}.upscale-btn:disabled{opacity:.45;cursor:not-allowed}.upscale-status{min-height:20px;margin-top:12px;color:#8b9bb3;font-size:10px;line-height:1.5}.upscale-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}.upscale-item{border:1px solid #2b3039;border-radius:11px;background:#171a20;overflow:hidden;min-width:0}.upscale-images{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#303744}.upscale-image{height:220px;background:#0e1116;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}.upscale-image img{max-width:100%;max-height:100%;object-fit:contain}.upscale-image small{position:absolute;left:7px;top:7px;background:rgba(0,0,0,.7);color:#fff;padding:4px 6px;border-radius:5px;font-size:8px}.upscale-info{padding:11px}.upscale-name{font-size:10px;font-weight:800;color:#e4e9f1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.upscale-meta{font-size:8px;color:#7f8ca2;margin-top:5px;line-height:1.5}.upscale-item .upscale-btn{width:100%;margin-top:9px}.upscale-empty{min-height:180px;display:flex;align-items:center;justify-content:center;text-align:center;color:#78859a;font-size:11px;grid-column:1/-1;border:1px dashed #303744;border-radius:10px}.upscale-note{margin-top:14px;padding:11px;border:1px dashed #303744;border-radius:9px;color:#78859a;font-size:9px;line-height:1.6}.upscale-note a{color:#55d6b2}@media(max-width:900px){.upscale-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.upscale-page{padding:12px 10px 28px}.upscale-body{padding:12px}.upscale-grid{grid-template-columns:1fr}.upscale-image{height:190px}}
+</style>
+
+
+<style id="csvnest-jpg-converter-css">
+.jpgc-page{padding:20px 24px 40px;min-height:calc(100vh - 90px)}.jpgc-shell{max-width:1180px;margin:0 auto}.jpgc-card{background:linear-gradient(145deg,#15171c,#101216);border:1px solid #2a2e36;border-radius:14px;overflow:hidden;box-shadow:0 12px 35px rgba(0,0,0,.18)}.jpgc-head{padding:20px;border-bottom:1px solid #2a2f38}.jpgc-title{font-size:20px;font-weight:900;color:#eef2f8}.jpgc-sub{margin-top:6px;color:#8190a8;font-size:11px;line-height:1.6}.jpgc-body{padding:20px}.jpgc-drop{min-height:190px;border:1px dashed #394354;border-radius:13px;background:#191c22;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;padding:20px}.jpgc-drop.dragover{border-color:#55d6b2;background:#14241f}.jpgc-drop input{display:none}.jpgc-drop strong{display:block;color:#e9edf4;font-size:15px;margin:10px 0 6px}.jpgc-drop span{color:#8190a8;font-size:10px}.jpgc-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;padding:14px;border:1px solid #2a2f38;border-radius:12px;background:#15181e}.jpgc-controls label{display:flex;align-items:center;gap:7px;color:#9ba8bc;font-size:10px}.jpgc-controls input[type=range]{width:120px;accent-color:#55d6b2}.jpgc-controls select{padding:9px;border:1px solid #303744;border-radius:7px;background:#101319;color:#e8edf5}.jpgc-btn{border:1px solid #303744;border-radius:8px;padding:10px 14px;font-size:10px;font-weight:900;cursor:pointer;background:#242933;color:#e6ebf2}.jpgc-btn.primary{background:#55d6b2;color:#09241c;border-color:#55d6b2}.jpgc-btn:disabled{opacity:.45;cursor:not-allowed}.jpgc-status{min-height:20px;margin-top:12px;color:#8b9bb3;font-size:10px;line-height:1.5}.jpgc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}.jpgc-item{border:1px solid #2b3039;border-radius:11px;background:#171a20;overflow:hidden;min-width:0}.jpgc-preview{height:210px;background:repeating-conic-gradient(#2b3039 0% 25%,#171a20 0% 50%) 50%/20px 20px;display:flex;align-items:center;justify-content:center;overflow:hidden}.jpgc-preview img{max-width:100%;max-height:100%;object-fit:contain}.jpgc-info{padding:11px}.jpgc-name{font-size:10px;font-weight:800;color:#e4e9f1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.jpgc-meta{font-size:8px;color:#7f8ca2;margin-top:5px;line-height:1.5;word-break:break-word}.jpgc-info .jpgc-btn{width:100%;margin-top:9px}.jpgc-empty{min-height:150px;display:flex;align-items:center;justify-content:center;text-align:center;color:#78859a;font-size:11px;grid-column:1/-1;border:1px dashed #303744;border-radius:10px}.jpgc-note{margin-top:14px;padding:11px;border:1px dashed #303744;border-radius:9px;color:#8b9bb3;font-size:9px;line-height:1.7}.jpgc-note b{color:#dbe3ef}@media(max-width:900px){.jpgc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.jpgc-page{padding:12px 10px 28px}.jpgc-body{padding:12px}.jpgc-grid{grid-template-columns:1fr}.jpgc-preview{height:190px}}
+</style>
+
 </head>
 
 <body>
@@ -2484,6 +2503,7 @@ body.light-mode .image-to-prompt-file-row{background:#fff;border-color:#d5dce5}b
     <button type="button" class="mg-nav-btn" data-page="imagePrompt"><span class="mg-nav-icon">✦</span><span class="mg-nav-label">Image to Prompt</span></button>
     <button type="button" class="mg-nav-btn" data-page="aiEpsJpg"><span class="mg-nav-icon">▧</span><span class="mg-nav-label">AI/EPS → JPG</span></button>
     <button type="button" class="mg-nav-btn" data-page="backgroundRemover"><span class="mg-nav-icon">⌫</span><span class="mg-nav-label">Background Remover</span></button>
+    <button type="button" class="mg-nav-btn" data-page="jpgConverter"><span class="mg-nav-icon">▣</span><span class="mg-nav-label">PNG → JPG Converter</span></button>
   </nav>
 </header>
 
@@ -2510,6 +2530,25 @@ body.light-mode .image-to-prompt-file-row{background:#fff;border-color:#d5dce5}b
 
 
   
+
+
+<!-- ===== Full-resolution image to JPG converter ===== -->
+<div class="mg-page" id="jpgConverterPage">
+ <div class="jpgc-page"><div class="jpgc-shell"><section class="jpgc-card">
+  <div class="jpgc-head"><div class="jpgc-title">▣ PNG / WEBP / JPEG → JPG Converter</div><div class="jpgc-sub">Convert images to high-quality JPG without resizing. Output pixel dimensions remain the same as the original.</div></div>
+  <div class="jpgc-body">
+   <label class="jpgc-drop" id="jpgcDrop"><input id="jpgcInput" type="file" accept="image/*,.jfif" multiple><div><div style="font-size:34px">▧</div><strong>Drop images here, click to browse, or paste with Ctrl + V</strong><span>PNG, WEBP, JPEG, JFIF, BMP and other browser-supported images • Batch conversion</span></div></label>
+   <div class="jpgc-controls">
+    <label>JPG quality <input id="jpgcQuality" type="range" min="80" max="100" value="98"><b id="jpgcQualityValue">98%</b></label>
+    <label>Transparent pixels <select id="jpgcBackground"><option value="#ffffff">White background</option><option value="#000000">Black background</option><option value="#f2f2f2">Light gray background</option></select></label>
+    <button type="button" class="jpgc-btn" id="jpgcClear">Clear All</button><button type="button" class="jpgc-btn primary" id="jpgcConvert" disabled>Convert to JPG</button><button type="button" class="jpgc-btn" id="jpgcDownloadAll" disabled>Download All JPGs</button>
+   </div>
+   <div class="jpgc-status" id="jpgcStatus" role="status">No resizing is performed. JPG is a lossy format, so use 98–100% quality for best visual quality. Transparent areas must be filled with a background color because JPG does not support transparency.</div>
+   <div class="jpgc-grid" id="jpgcGrid"><div class="jpgc-empty">Upload images to begin converting.</div></div>
+   <div class="jpgc-note"><b>Important:</b> This converter keeps the original pixel width and height. It does not upscale or downscale your image. JPG cannot retain transparent backgrounds; choose the background color above for transparent PNGs. Conversion is done locally in your browser.</div>
+  </div>
+ </section></div></div>
+</div>
 
 <!-- ===== Background Remover page ===== -->
 <div class="mg-page" id="backgroundRemoverPage">
@@ -2593,7 +2632,7 @@ body.light-mode .image-to-prompt-file-row{background:#fff;border-color:#d5dce5}b
       <div class="image-to-prompt-panel">
         <div class="image-to-prompt-label"><span>Reference Images</span><span id="imageToPromptFileCount">0 / 10</span></div>
         <div class="image-to-prompt-drop" id="imageToPromptDrop">
-          <div class="image-to-prompt-placeholder" id="imageToPromptPlaceholder"><strong>Upload up to 10 design screenshots</strong>Drag & drop multiple images here or click to browse<br>PNG, JPG, WEBP supported</div>
+          <div class="image-to-prompt-placeholder" id="imageToPromptPlaceholder"><strong>Upload up to 10 design screenshots</strong>Drag & drop images here, click to browse, or paste an image with <b>Ctrl + V</b><br>PNG, JPG, WEBP supported<div class="image-to-prompt-paste-hint">▣ Paste image or press Ctrl + V</div></div>
           <div class="image-to-prompt-preview-grid" id="imageToPromptPreviewGrid" style="display:none"></div>
         </div>
         <input type="file" id="imageToPromptInput" hidden multiple accept="image/*">
@@ -2676,6 +2715,7 @@ body.light-mode .image-to-prompt-file-row{background:#fff;border-color:#d5dce5}b
                 <button type="button" class="csvnest-api-provider-tab active" data-provider="Gemini">✦ &nbsp; Google Gemini</button>
                 <button type="button" class="csvnest-api-provider-tab" data-provider="Groq">⚡ &nbsp; Groq</button>
                 <button type="button" class="csvnest-api-provider-tab" data-provider="Apify">◈ &nbsp; Apify</button>
+                <button type="button" class="csvnest-api-provider-tab" data-provider="Replicate">✧ &nbsp; Replicate</button>
               </div>
 
               <div class="csvnest-api-modal-grid">
@@ -2694,7 +2734,7 @@ body.light-mode .image-to-prompt-file-row{background:#fff;border-color:#d5dce5}b
                         <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite</option>
                         <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
                       </select>
-                      <div class="gemini-api-model-help">Selected model is used first for generation. If unavailable, the app falls back automatically.</div>
+                      <div class="gemini-api-model-help">Only the six models from your list are shown. The app tries the selected model first, then falls back to the others.</div>
                     </div>
 
                     <div class="csvnest-provider-label" style="margin-top:14px;">Gemini API Keys</div>
@@ -2717,6 +2757,15 @@ body.light-mode .image-to-prompt-file-row{background:#fff;border-color:#d5dce5}b
                     <input id="apifyActorId" class="title-text-input" value="kawsar~adobe-stock-scraper" autocomplete="off" />
                     <div class="csvnest-provider-note">The tracker uses this Actor to search Adobe Stock. The API token is stored only in this browser's local storage.</div>
                     <a class="csvnest-api-get-link" href="https://console.apify.com/account#/integrations" target="_blank" rel="noopener noreferrer">↗ Get Apify API Token</a>
+                  </div>
+
+
+                  <div class="csvnest-api-provider-panel" data-panel="Replicate" style="display:none;">
+                    <div class="csvnest-provider-label">Replicate API Tokens</div>
+                    <div id="replicateKeyList"></div>
+                    <button type="button" class="action-btn csvnest-provider-add" id="addReplicateKey">＋ Add Replicate API Token</button>
+                    <div class="csvnest-provider-note">Used by AI Image Upscaler with the Real-ESRGAN model. Tokens are stored in this browser only. Keep your token private; browser-only storage is convenient but is not as secure as a server-side secret.</div>
+                    <a class="csvnest-api-get-link" href="https://replicate.com/account/api-tokens" target="_blank" rel="noopener noreferrer">↗ Get Replicate API Token</a>
                   </div>
 
                   <div class="csvnest-provider-actions">
@@ -3275,18 +3324,19 @@ body.light-mode .image-to-prompt-file-row{background:#fff;border-color:#d5dce5}b
     // and use the first model that is available for the current API key/quota.
     // If one model is unavailable, rate-limited, or temporarily fails, the next
     // model is tried automatically.
-    // Current Gemini API models.
-    // The previous list contained models/aliases that can now be unavailable
-    // to new users or temporarily capacity-limited. Keep several current
-    // stable Flash models so the app can automatically fall back.
-    const GEMINI_MODELS = [
-      { id: "gemini-3.8-flash", label: "Gemini 3.8 Flash" },
-      { id: "gemini-3.7-flash", label: "Gemini 3.7 Flash" },
-      { id: "gemini-3.6-flash", label: "Gemini 3.6 Flash" },
-      { id: "gemini-3.5-flash-lite", label: "Gemini 3.5 Flash-Lite" },
-      { id: "gemini-3.1-flash-lite", label: "Gemini 3.1 Flash-Lite" },
-      { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash" }
+    // Exactly the six Gemini models requested by the user, in the same order
+    // as the supplied screenshot. Do not append other or custom model IDs.
+    const GEMINI_BASE_MODELS = [
+      { id: "gemini-3.8-flash", label: "Gemini 3.8 Flash", custom: false },
+      { id: "gemini-3.7-flash", label: "Gemini 3.7 Flash", custom: false },
+      { id: "gemini-3.6-flash", label: "Gemini 3.6 Flash", custom: false },
+      { id: "gemini-3.5-flash-lite", label: "Gemini 3.5 Flash-Lite", custom: false },
+      { id: "gemini-3.1-flash-lite", label: "Gemini 3.1 Flash-Lite", custom: false },
+      { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash", custom: false }
     ];
+    // Ignore any custom model IDs saved by an older version of the HTML.
+    try { localStorage.removeItem("csvnest_custom_gemini_models"); } catch (_) {}
+    const GEMINI_MODELS = [...GEMINI_BASE_MODELS];
 
     function getSelectedGeminiModel() {
       const saved = (localStorage.getItem("csvnest_gemini_model") || "").trim();
@@ -3485,6 +3535,26 @@ body.light-mode .image-to-prompt-file-row{background:#fff;border-color:#d5dce5}b
       ["dragenter","dragover"].forEach(type=>drop?.addEventListener(type,e=>{e.preventDefault();drop.classList.add("dragover")}));
       ["dragleave","drop"].forEach(type=>drop?.addEventListener(type,e=>{e.preventDefault();drop.classList.remove("dragover")}));
       drop?.addEventListener("drop",e=>addFiles(e.dataTransfer.files));
+      // Accept screenshots or copied images from the clipboard with Ctrl+V / Cmd+V.
+      // Only intercept clipboard events when the Image to Prompt page is active and
+      // the clipboard actually contains image data, so ordinary text pasting still works.
+      document.addEventListener("paste", e => {
+        const page = document.getElementById("imageToPromptPage");
+        if (!page?.classList.contains("active")) return;
+        const items = Array.from(e.clipboardData?.items || []);
+        const imageFiles = items.filter(item => item.kind === "file" && String(item.type || "").startsWith("image/"))
+          .map((item, index) => {
+            const blob = item.getAsFile();
+            if (!blob) return null;
+            const ext = (blob.type.split("/")[1] || "png").replace("jpeg", "jpg").replace(/[^a-z0-9]/gi, "");
+            const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+            return new File([blob], `pasted-image-${stamp}-${index + 1}.${ext || "png"}`, { type: blob.type || "image/png", lastModified: Date.now() });
+          }).filter(Boolean);
+        if (!imageFiles.length) return;
+        e.preventDefault();
+        addFiles(imageFiles);
+        setStatus(`Pasted ${imageFiles.length} image${imageFiles.length === 1 ? "" : "s"} from clipboard.`);
+      });
       clear?.addEventListener("click",reset); generate?.addEventListener("click",generateAll);
       copyAll?.addEventListener("click",async()=>{const text=results.filter(r=>r.prompt&&!r.prompt.startsWith("Generation failed:")).map((r,i)=>`[${i+1}] ${r.name}\n${r.prompt}`).join("\n\n");if(!text)return;try{await navigator.clipboard.writeText(text);setStatus("All prompts copied to clipboard.")}catch{window.prompt("Copy All Prompts:",text)}});
       useAll?.addEventListener("click",()=>{const instruction=document.getElementById("instruction");const text=results.filter(r=>r.prompt&&!r.prompt.startsWith("Generation failed:")).map(r=>r.prompt).join("\n\n---\n\n");if(!text||!instruction)return;instruction.value=text;instruction.dispatchEvent(new Event("input",{bubbles:true}));setStatus("All generated prompts added to Extra instruction.")});
@@ -3550,10 +3620,42 @@ body.light-mode .image-to-prompt-file-row{background:#fff;border-color:#d5dce5}b
       });
     }
 
+    // Filter low-value English stop words from stock keywords. Meaningful
+    // subject words from the title are allowed; grammatical filler words are not.
+    const CSVNEST_KEYWORD_STOP_WORDS = new Set((
+      "a an the and or but if then else when while where who whom whose which what " +
+      "is am are was were be been being do does did doing have has had having " +
+      "to of in on at by for from with about into onto upon over under between " +
+      "through during before after above below up down out off again further " +
+      "once here there all any both each few more most other some such no nor " +
+      "not only own same so than too very can will just should now it its this " +
+      "that these those he she they them their his her we us our you your i me " +
+      "my mine as because until per via also"
+    ).split(/\\s+/));
+
+    function csvnestCleanKeywordPhrase(value) {
+      let phrase = String(value || "")
+        .replace(/[_-]+/g, " ")
+        .replace(/\\s+/g, " ")
+        .trim();
+      if (!phrase) return "";
+
+      // Keywords are search terms, not sentences: remove grammatical filler
+      // while preserving meaningful descriptive words and their order.
+      const words = phrase.split(/\\s+/).filter(word => {
+        const normalized = word.toLowerCase().replace(/^[^\\p{L}\\p{N}]+|[^\\p{L}\\p{N}]+$/gu, "");
+        return normalized && !CSVNEST_KEYWORD_STOP_WORDS.has(normalized);
+      });
+      phrase = words.join(" ").replace(/\\s+/g, " ").trim();
+      if (!phrase) return "";
+      if (CSVNEST_KEYWORD_STOP_WORDS.has(phrase.toLowerCase())) return "";
+      return phrase;
+    }
+
     function csvnestSanitizeKeywords(keywords) {
       const seen = new Set();
       return (Array.isArray(keywords) ? keywords : [])
-        .map(k => String(k || "").replace(/\s+/g, " ").trim())
+        .map(csvnestCleanKeywordPhrase)
         .filter(k => k && !csvnestIsHighRiskKeyword(k))
         .filter(k => {
           const key = k.toLowerCase();
@@ -4655,25 +4757,103 @@ Requirements:
     const apiStoredCount = document.getElementById("apiStoredCount");
     const apiStoredHelp = document.getElementById("apiStoredHelp");
     const geminiModelSelect = document.getElementById("geminiModelSelect");
+    const geminiCustomModelInput = document.getElementById("geminiCustomModelInput");
+    const addGeminiModelBtn = document.getElementById("addGeminiModelBtn");
+    const geminiCustomModelList = document.getElementById("geminiCustomModelList");
+
+    function renderGeminiModelOptions(preferredId) {
+      if (!geminiModelSelect) return;
+      const current = preferredId || geminiModelSelect.value || getSelectedGeminiModel();
+      geminiModelSelect.innerHTML = "";
+      GEMINI_MODELS.forEach(model => {
+        const option = document.createElement("option");
+        option.value = model.id;
+        option.textContent = model.label + (model.custom ? " (Custom)" : "");
+        geminiModelSelect.appendChild(option);
+      });
+      geminiModelSelect.value = GEMINI_MODELS.some(m => m.id === current) ? current : GEMINI_MODELS[0].id;
+      localStorage.setItem("csvnest_gemini_model", geminiModelSelect.value);
+    }
+
+    function renderCustomGeminiModelList() {
+      if (!geminiCustomModelList) return;
+      geminiCustomModelList.innerHTML = "";
+      const customModels = GEMINI_MODELS.filter(m => m.custom);
+      if (!customModels.length) {
+        const note = document.createElement("div");
+        note.className = "gemini-api-model-help";
+        note.textContent = "No custom models added yet.";
+        geminiCustomModelList.appendChild(note);
+        return;
+      }
+      customModels.forEach(model => {
+        const row = document.createElement("div");
+        row.className = "csvnest-custom-model-item";
+        const name = document.createElement("span");
+        name.textContent = model.label + " — " + model.id;
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.textContent = "Remove";
+        remove.setAttribute("aria-label", "Remove model " + model.id);
+        remove.addEventListener("click", () => {
+          const index = GEMINI_MODELS.findIndex(m => m.id === model.id && m.custom);
+          if (index >= 0) GEMINI_MODELS.splice(index, 1);
+          localStorage.setItem("csvnest_custom_gemini_models", JSON.stringify(GEMINI_MODELS.filter(m => m.custom).map(({id,label}) => ({id,label}))));
+          const selected = geminiModelSelect?.value === model.id ? GEMINI_BASE_MODELS[0].id : geminiModelSelect?.value;
+          renderGeminiModelOptions(selected);
+          renderCustomGeminiModelList();
+          if (apiStatus) { apiStatus.textContent = "Custom Gemini model removed: " + model.id; apiStatus.style.color = "var(--green)"; }
+        });
+        row.append(name, remove);
+        geminiCustomModelList.appendChild(row);
+      });
+    }
+
+    function addCustomGeminiModel() {
+      const raw = (geminiCustomModelInput?.value || "").trim();
+      const id = raw.replace(/^models\//i, "");
+      if (!id) { if (apiStatus) { apiStatus.textContent = "Enter a Gemini model ID, e.g. gemini-2.5-pro."; apiStatus.style.color = "#e3a2a5"; } return; }
+      if (!/^[-a-zA-Z0-9.]+$/.test(id)) { if (apiStatus) { apiStatus.textContent = "Invalid model ID. Use letters, numbers, dots, and hyphens only."; apiStatus.style.color = "#e3a2a5"; } return; }
+      const existing = GEMINI_MODELS.find(m => m.id.toLowerCase() === id.toLowerCase());
+      if (existing) {
+        renderGeminiModelOptions(existing.id);
+        if (apiStatus) { apiStatus.textContent = "This model is already in the list."; apiStatus.style.color = "#e3a2a5"; }
+        return;
+      }
+      const label = id.replace(/^gemini-/i, "Gemini ").replace(/-/g, " ").replace(/\bflash lite\b/i, "Flash-Lite").replace(/\bflash\b/i, "Flash").replace(/\bpro\b/i, "Pro");
+      GEMINI_MODELS.push({id, label, custom:true});
+      localStorage.setItem("csvnest_custom_gemini_models", JSON.stringify(GEMINI_MODELS.filter(m => m.custom).map(({id,label}) => ({id,label}))));
+      renderGeminiModelOptions(id);
+      renderCustomGeminiModelList();
+      if (geminiCustomModelInput) geminiCustomModelInput.value = "";
+      if (apiStatus) { apiStatus.textContent = "Model added: " + id + ". Select it and test your API key."; apiStatus.style.color = "var(--green)"; }
+    }
+
     if (geminiModelSelect) {
-      geminiModelSelect.value = getSelectedGeminiModel();
+      renderGeminiModelOptions(getSelectedGeminiModel());
       geminiModelSelect.addEventListener("change", () => {
         localStorage.setItem("csvnest_gemini_model", geminiModelSelect.value);
-        if (typeof apiStatus !== "undefined" && apiStatus) {
+        if (apiStatus) {
           const model = GEMINI_MODELS.find(m => m.id === geminiModelSelect.value);
           apiStatus.textContent = `Gemini model selected: ${model?.label || geminiModelSelect.value}`;
+          apiStatus.style.color = "var(--green)";
         }
       });
     }
+    addGeminiModelBtn?.addEventListener("click", addCustomGeminiModel);
+    geminiCustomModelInput?.addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); addCustomGeminiModel(); } });
+    renderCustomGeminiModelList();
     const geminiKeyList = document.getElementById("geminiKeyList");
     const groqKeyList = document.getElementById("groqKeyList");
     const apifyKeyList = document.getElementById("apifyKeyList");
+    const replicateKeyList = document.getElementById("replicateKeyList");
     const apifyActorIdInput = document.getElementById("apifyActorId");
     const apiStatus = document.getElementById("apiStatus");
 
     const addGeminiKeyBtn = document.getElementById("addGeminiKey");
     const addGroqKeyBtn = document.getElementById("addGroqKey");
     const addApifyKeyBtn = document.getElementById("addApifyKey");
+    const addReplicateKeyBtn = document.getElementById("addReplicateKey");
     const testAllKeysBtn = document.getElementById("testAllKeys");
     const saveAllKeysBtn = document.getElementById("saveAllKeys");
     const forgetSavedKeysBtn = document.getElementById("forgetSavedKeys");
@@ -4683,10 +4863,13 @@ Requirements:
     const GROQ_KEYS_STORAGE = "csvnest_groq_keys_v1";
     const APIFY_KEYS_STORAGE = "csvnest_apify_keys_v1";
     const APIFY_ACTOR_STORAGE = "csvnest_apify_actor_v1";
+    const REPLICATE_KEYS_STORAGE = "csvnest_replicate_keys_v1";
 
     let csvnestGeminiKeys = [];
     let csvnestGroqKeys = [];
     let csvnestApifyKeys = [];
+    let csvnestReplicateKeys = [];
+    window.csvnestReplicateKeys = csvnestReplicateKeys;
     window.csvnestApifyKeys = csvnestApifyKeys;
 
     function loadProviderKeys() {
@@ -4735,13 +4918,20 @@ Requirements:
           }
         }
 
+        const replicateRaw = localStorage.getItem(REPLICATE_KEYS_STORAGE);
+        if (replicateRaw) {
+          const saved = JSON.parse(replicateRaw);
+          if (Array.isArray(saved)) csvnestReplicateKeys = saved.map(x => ({key:String(x.key || ""),show:false,status:"Not tested"})).filter(x=>x.key.trim());
+        }
         const savedActor = (localStorage.getItem(APIFY_ACTOR_STORAGE) || "").trim();
         if (savedActor && apifyActorIdInput) apifyActorIdInput.value = savedActor;
       } catch (_) {
         csvnestGeminiKeys = [];
         csvnestGroqKeys = [];
         csvnestApifyKeys = [];
+        csvnestReplicateKeys = [];
       }
+      window.csvnestReplicateKeys = csvnestReplicateKeys;
       window.csvnestApifyKeys = csvnestApifyKeys;
       renderProviderKeys();
     }
@@ -4750,15 +4940,19 @@ Requirements:
       csvnestGeminiKeys = csvnestGeminiKeys.filter(x => x.key.trim());
       csvnestGroqKeys = csvnestGroqKeys.filter(x => x.key.trim());
       csvnestApifyKeys = csvnestApifyKeys.filter(x => x.key.trim());
+      csvnestReplicateKeys = csvnestReplicateKeys.filter(x => x.key.trim());
+      window.csvnestReplicateKeys = csvnestReplicateKeys;
       window.csvnestApifyKeys = csvnestApifyKeys;
 
       const geminiClean = csvnestGeminiKeys.map(x => ({key:x.key.trim()}));
       const groqClean = csvnestGroqKeys.map(x => ({key:x.key.trim()}));
       const apifyClean = csvnestApifyKeys.map(x => ({key:x.key.trim()}));
+      const replicateClean = csvnestReplicateKeys.map(x => ({key:x.key.trim()}));
 
       localStorage.setItem(GEMINI_KEYS_STORAGE, JSON.stringify(geminiClean));
       localStorage.setItem(GROQ_KEYS_STORAGE, JSON.stringify(groqClean));
       localStorage.setItem(APIFY_KEYS_STORAGE, JSON.stringify(apifyClean));
+      localStorage.setItem(REPLICATE_KEYS_STORAGE, JSON.stringify(replicateClean));
       if (apifyActorIdInput) {
         const actor = apifyActorIdInput.value.trim() || "kawsar~adobe-stock-scraper";
         localStorage.setItem(APIFY_ACTOR_STORAGE, actor);
@@ -4774,7 +4968,7 @@ Requirements:
 
       if (showMessage) {
         apiStatus.textContent =
-          `${geminiClean.length} Gemini + ${groqClean.length} Groq + ${apifyClean.length} Apify key${(geminiClean.length + groqClean.length + apifyClean.length) === 1 ? "" : "s"} saved locally.`;
+          `${geminiClean.length} Gemini + ${groqClean.length} Groq + ${apifyClean.length} Apify + ${replicateClean.length} Replicate key(s) saved locally.`;
         apiStatus.style.color = "var(--green)";
       }
     }
@@ -4800,7 +4994,7 @@ Requirements:
         ? testGeminiKey(index)
         : provider === "Groq"
           ? testGroqKey(index)
-          : testApifyKey(index);
+          : provider === "Apify" ? testApifyKey(index) : testReplicateKey(index);
 
       const remove = document.createElement("button");
       remove.type = "button";
@@ -4810,7 +5004,8 @@ Requirements:
       remove.onclick = () => {
         if (provider === "Gemini") csvnestGeminiKeys.splice(index, 1);
         else if (provider === "Groq") csvnestGroqKeys.splice(index, 1);
-        else csvnestApifyKeys.splice(index, 1);
+        else if (provider === "Apify") csvnestApifyKeys.splice(index, 1);
+        else csvnestReplicateKeys.splice(index, 1);
         renderProviderKeys();
       };
 
@@ -4855,6 +5050,7 @@ Requirements:
       geminiKeyList.innerHTML = "";
       groqKeyList.innerHTML = "";
       if (apifyKeyList) apifyKeyList.innerHTML = "";
+      if (replicateKeyList) replicateKeyList.innerHTML = "";
 
       if (!csvnestGeminiKeys.length) {
         const empty = document.createElement("div");
@@ -4891,6 +5087,12 @@ Requirements:
         }
       }
 
+      if (replicateKeyList) {
+        if (!csvnestReplicateKeys.length) {
+          const empty = document.createElement("div"); empty.className="api-key-status"; empty.textContent="No Replicate token added yet."; replicateKeyList.appendChild(empty);
+        } else csvnestReplicateKeys.forEach((item,index)=>replicateKeyList.appendChild(makeProviderKeyCard("Replicate",item,index)));
+      }
+
       const activeProvider = document.querySelector(".csvnest-api-provider-tab.active")?.dataset.provider || "Gemini";
       updateApiStoredCount(activeProvider);
     }
@@ -4904,17 +5106,18 @@ Requirements:
       if (apiConfigHelp) apiConfigHelp.textContent =
         provider === "Gemini" ? "Add and test your Google Gemini API keys." :
         provider === "Groq" ? "Add and test your Groq API keys." :
-        "Add and test your Apify API key. The Adobe Tracker uses it to run the Adobe Stock scraper.";
+        provider === "Apify" ? "Add and test your Apify API key. The Adobe Tracker uses it to run the Adobe Stock scraper." :
+        "Add a Replicate API token for AI image upscaling.";
       if (apiStoredHelp) apiStoredHelp.textContent =
         provider === "Gemini" ? "Your saved Gemini keys will appear here." :
         provider === "Groq" ? "Your saved Groq keys will appear here." :
-        "Your saved Apify key(s) will appear here.";
+        provider === "Apify" ? "Your saved Apify key(s) will appear here." : "Your saved Replicate token(s) will appear here.";
       updateApiStoredCount(provider);
     }
 
     function updateApiStoredCount(provider = "Gemini") {
       const list = provider === "Gemini" ? csvnestGeminiKeys :
-        provider === "Groq" ? csvnestGroqKeys : csvnestApifyKeys;
+        provider === "Groq" ? csvnestGroqKeys : provider === "Apify" ? csvnestApifyKeys : csvnestReplicateKeys;
       if (apiStoredCount) apiStoredCount.textContent = String(list.filter(item => item && item.key && item.key.trim()).length);
     }
 
@@ -5071,6 +5274,18 @@ Requirements:
       }
     }
 
+    async function testReplicateKey(index) {
+      const item = csvnestReplicateKeys[index];
+      if (!item || !item.key.trim()) { if(item)item.status="ERROR: Enter an API token."; renderProviderKeys(); return false; }
+      item.status="Testing..."; renderProviderKeys();
+      try {
+        const response=await fetch("https://api.replicate.com/v1/account",{headers:{"Authorization":"Bearer "+item.key.trim(),"Accept":"application/json"}});
+        const data=await response.json().catch(()=>({}));
+        if(!response.ok) throw new Error(data?.detail || data?.title || `HTTP ${response.status}`);
+        item.status="Connected ✓"; apiStatus.textContent=`Replicate connected${data?.username ? " — "+data.username : ""}.`; apiStatus.style.color="var(--green)"; renderProviderKeys(); return true;
+      } catch(error) { item.status="ERROR: "+(error?.message||error); apiStatus.textContent="Replicate connection failed: "+(error?.message||error)+". If the browser reports CORS, token test may be blocked by browser policy."; apiStatus.style.color="#e3a2a5"; renderProviderKeys(); return false; }
+    }
+
     apiKeysBtn?.addEventListener("click", openApiModal);
     apiModalClose?.addEventListener("click", closeApiModal);
     apiModal?.addEventListener("click", e => {
@@ -5104,6 +5319,12 @@ Requirements:
       if (inputs.length) inputs[inputs.length - 1].focus();
     };
 
+    addReplicateKeyBtn.onclick = () => {
+      csvnestReplicateKeys.push({key:"",show:false,status:"Not tested"});
+      window.csvnestReplicateKeys=csvnestReplicateKeys; renderProviderKeys();
+      const inputs=replicateKeyList?.querySelectorAll("input")||[]; if(inputs.length)inputs[inputs.length-1].focus();
+    };
+
     saveAllKeysBtn.onclick = () => {
       saveProviderKeys(true);
       renderProviderKeys();
@@ -5114,8 +5335,9 @@ Requirements:
       localStorage.removeItem(GROQ_KEYS_STORAGE);
       localStorage.removeItem(APIFY_KEYS_STORAGE);
       localStorage.removeItem(APIFY_ACTOR_STORAGE);
+      localStorage.removeItem(REPLICATE_KEYS_STORAGE);
       localStorage.removeItem("csvnest_gemini_api_key");
-      apiStatus.textContent = "Saved Gemini, Groq, and Apify keys removed.";
+      apiStatus.textContent = "Saved Gemini, Groq, Apify, and Replicate keys removed.";
       apiStatus.style.color = "#e3a2a5";
     };
 
@@ -5123,16 +5345,18 @@ Requirements:
       csvnestGeminiKeys = [];
       csvnestGroqKeys = [];
       csvnestApifyKeys = [];
+      csvnestReplicateKeys = [];
+      window.csvnestReplicateKeys = csvnestReplicateKeys;
       window.csvnestApifyKeys = csvnestApifyKeys;
       renderProviderKeys();
-      apiStatus.textContent = "Current Gemini, Groq, and Apify keys cleared. Click Save Keys to save this empty state.";
+      apiStatus.textContent = "Current Gemini, Groq, Apify, and Replicate keys cleared. Click Save Keys to save this empty state.";
       apiStatus.style.color = "#e3a2a5";
     };
 
     testAllKeysBtn.onclick = async () => {
-      const total = csvnestGeminiKeys.length + csvnestGroqKeys.length + csvnestApifyKeys.length;
+      const total = csvnestGeminiKeys.length + csvnestGroqKeys.length + csvnestApifyKeys.length + csvnestReplicateKeys.length;
       if (!total) {
-        apiStatus.textContent = "Add a Gemini, Groq, or Apify API key first.";
+        apiStatus.textContent = "Add a Gemini, Groq, Apify, or Replicate API key first.";
         apiStatus.style.color = "#e3a2a5";
         return;
       }
@@ -5145,6 +5369,9 @@ Requirements:
       }
       for (let i = 0; i < csvnestApifyKeys.length; i++) {
         if (csvnestApifyKeys[i].key.trim()) await testApifyKey(i);
+      }
+      for (let i = 0; i < csvnestReplicateKeys.length; i++) {
+        if (csvnestReplicateKeys[i].key.trim()) await testReplicateKey(i);
       }
 
       apiStatus.textContent = "Finished testing all API keys.";
@@ -5492,7 +5719,7 @@ Requirements:
       const prompt=`Analyze this live Adobe Stock market sample. Return 5 concise bullets: demand themes, content types appearing often, download concentration, AI-content mix, and practical design research ideas. Clearly state that this is sample-based analysis and not Adobe's official ranking. Data: ${JSON.stringify(liveResults.slice(0,100))}`;
       let text='';
       const errors=[];
-      for(const model of (typeof GEMINI_MODELS!=='undefined' ? GEMINI_MODELS : [{id:'gemini-3.8-flash',label:'Gemini 3.8 Flash'}])){
+      for(const model of (typeof GEMINI_MODELS!=='undefined' ? GEMINI_MODELS : [{id:'gemini-2.5-flash',label:'Gemini 2.5 Flash'}])){
         try{
           const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model.id)}:generateContent?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
           const data=await res.json().catch(()=>({}));
@@ -5875,6 +6102,76 @@ Requirements:
 })();
 </script>
 
+
+<script>
+(function(){
+  const input=document.getElementById('upscaleInput'),drop=document.getElementById('upscaleDrop'),grid=document.getElementById('upscaleGrid'),runBtn=document.getElementById('upscaleRun'),clear=document.getElementById('upscaleClear'),status=document.getElementById('upscaleStatus'),downloadAll=document.getElementById('upscaleDownloadAll'),apiBtn=document.getElementById('upscaleOpenApi');
+  if(!input||!drop||!grid)return;
+  let items=[]; let busy=false;
+  const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const fmt=n=>n<1024?`${n} B`:n<1048576?`${(n/1024).toFixed(1)} KB`:`${(n/1048576).toFixed(2)} MB`;
+  function token(){try{const a=JSON.parse(localStorage.getItem('csvnest_replicate_keys_v1')||'[]');return a.find(x=>x&&String(x.key||'').trim())?.key?.trim()||'';}catch(_){return '';}}
+  function render(){
+    runBtn.disabled=busy||!items.some(x=>!x.done&&!x.busy);downloadAll.disabled=busy||!items.some(x=>x.outputUrl);clear.disabled=busy;
+    if(!items.length){grid.innerHTML='<div class="upscale-empty">Upload images to begin upscaling.</div>';return;}
+    grid.innerHTML=''; items.forEach((it,i)=>{const el=document.createElement('div');el.className='upscale-item';el.innerHTML=`<div class="upscale-images"><div class="upscale-image"><small>Original</small><img src="${it.previewUrl}" alt="Original"></div><div class="upscale-image"><small>Upscaled</small>${it.outputUrl?`<img src="${it.outputUrl}" alt="Upscaled">`:'<span style="color:#68758a;font-size:10px;text-align:center;padding:10px">'+esc(it.error||it.status||'Waiting')+'</span>'}</div></div><div class="upscale-info"><div class="upscale-name" title="${esc(it.file.name)}">${esc(it.file.name)}</div><div class="upscale-meta">${fmt(it.file.size)} • ${it.done?`${it.width||'?'} × ${it.height||'?'} px`:(it.error?'Failed':it.busy?'Processing…':'Ready')}</div>${it.error?`<div class="upscale-meta" style="color:#ff9696">${esc(it.error)}</div>`:''}<button class="upscale-btn" data-download="${i}" ${it.outputUrl?'':'disabled'}>⇩ Download PNG</button><button class="upscale-btn" data-remove="${i}" ${busy?'disabled':''}>Remove</button></div>`;grid.appendChild(el);});
+    grid.querySelectorAll('[data-download]').forEach(b=>b.onclick=()=>download(items[+b.dataset.download]));grid.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{if(busy)return;const it=items.splice(+b.dataset.remove,1)[0];if(it.previewUrl)URL.revokeObjectURL(it.previewUrl);if(it.outputUrl&&it.outputUrl.startsWith('blob:'))URL.revokeObjectURL(it.outputUrl);render();});
+  }
+  function add(files){for(const f of files){if(!f.type.startsWith('image/'))continue;if(items.length>=30)break;if(items.some(x=>x.file.name===f.name&&x.file.size===f.size))continue;items.push({file:f,previewUrl:URL.createObjectURL(f),outputUrl:'',done:false,busy:false,status:'Ready',error:''});}status.textContent=`${items.length} image(s) queued. Processing uses Replicate credits/billing.`;render();}
+  function download(it){if(!it?.outputUrl)return;const a=document.createElement('a');a.href=it.outputUrl;a.download=(it.file.name.replace(/\.[^.]+$/,'')||'upscaled')+'_upscaled.png';document.body.appendChild(a);a.click();a.remove();}
+  async function readError(res){const d=await res.json().catch(()=>({}));return d.detail||d.title||d.error||`HTTP ${res.status}`;}
+  async function sourceFor(file,key){
+    // Replicate recommends data URLs for small files; upload larger files first.
+    if(file.size<=700*1024){return await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(new Error('Could not read image file.'));r.readAsDataURL(file);});}
+    const fd=new FormData();fd.append('content',file,file.name);fd.append('metadata',JSON.stringify({source:'CSVNest Image Upscaler'}));
+    const res=await fetch('https://api.replicate.com/v1/files',{method:'POST',headers:{'Authorization':'Bearer '+key},body:fd});if(!res.ok)throw new Error('Input upload failed: '+await readError(res));const d=await res.json();
+    let url=d?.urls?.get||d?.urls?.download||d?.url||'';
+    if(url){
+      // The file resource URL may return metadata first; prefer a signed download URL when exposed.
+      try{const meta=await fetch(url,{headers:{'Authorization':'Bearer '+key}});if(meta.ok){const md=await meta.json().catch(()=>null);url=md?.urls?.download||md?.urls?.get||md?.url||url;}}catch(_){ }
+    }
+    if(!url)throw new Error('Replicate did not return an input file URL. Try a smaller image.');return url;
+  }
+  async function prediction(key,file,scale,face){
+    const image=await sourceFor(file,key);
+    const res=await fetch('https://api.replicate.com/v1/models/nightmareai/real-esrgan/predictions',{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json','Prefer':'wait=60'},body:JSON.stringify({input:{image,scale:Number(scale),face_enhance:!!face}})});
+    if(!res.ok)throw new Error(await readError(res));let d=await res.json();
+    let loops=0;while(['starting','processing'].includes(d.status)&&d.urls?.get&&loops<90){status.textContent=`Replicate is processing ${file.name}…`;await new Promise(r=>setTimeout(r,2000));const poll=await fetch(d.urls.get,{headers:{'Authorization':'Bearer '+key}});if(!poll.ok)throw new Error(await readError(poll));d=await poll.json();loops++;}
+    if(d.status!=='succeeded')throw new Error(d.error||`Prediction status: ${d.status||'unknown'}`);
+    let out=d.output; if(Array.isArray(out))out=out[0]; if(out&&typeof out==='object')out=out.url||out.href||''; if(typeof out!=='string'||!out)throw new Error('Model completed but returned no image URL.');return out;
+  }
+  async function run(){
+    if(busy)return;const key=token();if(!key){status.textContent='Replicate API token missing. Open API Key Management → Replicate and save your token.';if(typeof window.csvnestOpenApi==='function'){window.csvnestOpenApi();document.querySelector('.csvnest-api-provider-tab[data-provider="Replicate"]')?.click();}return;}
+    const queue=items.filter(x=>!x.done&&!x.busy);if(!queue.length){status.textContent='No pending images.';return;}busy=true;render();let completed=0;
+    for(const it of queue){it.busy=true;it.error='';it.status='Uploading / processing…';render();status.textContent=`Upscaling ${completed+1} of ${queue.length}: ${it.file.name}`;
+      try{const url=await prediction(key,it.file,document.getElementById('upscaleScale').value,document.getElementById('upscaleFace').checked);const resp=await fetch(url);if(!resp.ok)throw new Error('Could not download output image.');const blob=await resp.blob();it.outputUrl=URL.createObjectURL(blob);it.done=true;it.status='Completed';const dims=await new Promise(resolve=>{const im=new Image();im.onload=()=>resolve([im.naturalWidth,im.naturalHeight]);im.onerror=()=>resolve([0,0]);im.src=it.outputUrl;});it.width=dims[0];it.height=dims[1];
+      }catch(e){it.error=String(e?.message||e);it.status='Failed';}
+      it.busy=false;completed++;render();
+    }
+    busy=false;render();const failed=items.filter(x=>x.error).length;status.textContent=`Finished. ${completed-failed} completed, ${failed} failed. Output files can be downloaded below.`;
+  }
+  input.addEventListener('change',e=>{add([...e.target.files]);input.value='';});drop.addEventListener('click',e=>{if(e.target!==input)input.click();});['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('dragover');}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('dragover');}));drop.addEventListener('drop',e=>add([...e.dataTransfer.files]));
+  clear.addEventListener('click',()=>{if(busy)return;items.forEach(x=>{URL.revokeObjectURL(x.previewUrl);if(x.outputUrl&&x.outputUrl.startsWith('blob:'))URL.revokeObjectURL(x.outputUrl);});items=[];status.textContent='Queue cleared.';render();});runBtn.addEventListener('click',run);downloadAll.addEventListener('click',()=>items.filter(x=>x.outputUrl).forEach((it,i)=>setTimeout(()=>download(it),i*350)));apiBtn.addEventListener('click',()=>{if(typeof window.csvnestOpenApi==='function'){window.csvnestOpenApi();document.querySelector('.csvnest-api-provider-tab[data-provider="Replicate"]')?.click();}});render();
+})();
+</script>
+
+<script id="csvnest-jpg-converter-js">
+(function(){
+ const input=document.getElementById('jpgcInput'),drop=document.getElementById('jpgcDrop'),grid=document.getElementById('jpgcGrid'),quality=document.getElementById('jpgcQuality'),qualityValue=document.getElementById('jpgcQualityValue'),bg=document.getElementById('jpgcBackground'),convertBtn=document.getElementById('jpgcConvert'),clearBtn=document.getElementById('jpgcClear'),downloadAllBtn=document.getElementById('jpgcDownloadAll'),status=document.getElementById('jpgcStatus');
+ if(!input||!drop||!grid)return;
+ let items=[],busy=false;
+ const fmt=n=>{if(!Number.isFinite(n))return '—';if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(2)+' MB'};
+ const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function render(){if(!items.length){grid.innerHTML='<div class="jpgc-empty">Upload images to begin converting.</div>';convertBtn.disabled=true;downloadAllBtn.disabled=true;return;}grid.innerHTML='';items.forEach((it,i)=>{const el=document.createElement('div');el.className='jpgc-item';el.innerHTML='<div class="jpgc-preview">'+(it.outputUrl?'<img src="'+it.outputUrl+'" alt="JPG result">':it.previewUrl?'<img src="'+it.previewUrl+'" alt="Original image">':'<span>Loading preview…</span>')+'</div><div class="jpgc-info"><div class="jpgc-name" title="'+esc(it.file.name)+'">'+esc(it.file.name)+'</div><div class="jpgc-meta">'+(it.width?it.width+' × '+it.height+' px • ':'')+fmt(it.file.size)+(it.outputBlob?' → '+fmt(it.outputBlob.size)+' JPG':'')+'</div>'+(it.error?'<div class="jpgc-meta" style="color:#ff9696">'+esc(it.error)+'</div>':'')+'<button type="button" class="jpgc-btn" data-dl="'+i+'" '+(it.outputBlob?'':'disabled')+'>⇩ Download JPG</button><button type="button" class="jpgc-btn" data-remove="'+i+'" '+(busy?'disabled':'')+'>Remove</button></div>';grid.appendChild(el);});convertBtn.disabled=busy||!items.length;downloadAllBtn.disabled=busy||!items.some(x=>x.outputBlob);}
+ function addFiles(files){const arr=[...files].filter(f=>f&&((f.type||'').startsWith('image/')||/\.(jfif|jpe?g|png|webp|bmp|gif|avif|tiff?)$/i.test(f.name)));let added=0;for(const file of arr){if(items.length>=200)break;const it={file,previewUrl:'',outputUrl:'',outputBlob:null,width:0,height:0,error:''};items.push(it);added++;const idx=items.length-1;const u=URL.createObjectURL(file);it.previewUrl=u;const im=new Image();im.onload=()=>{it.width=im.naturalWidth;it.height=im.naturalHeight;render();};im.onerror=()=>{it.error='This image format could not be opened by your browser.';render();};im.src=u;}render();if(added)status.textContent=added+' image(s) added. Original pixel dimensions will be preserved.';else if(arr.length)status.textContent='Maximum 200 images per session.';}
+ function download(it){if(!it||!it.outputBlob)return;const a=document.createElement('a');a.href=it.outputUrl;a.download=(it.file.name.replace(/\.[^.]+$/,'')||'image')+'.jpg';document.body.appendChild(a);a.click();a.remove();}
+ function loadImage(file){return new Promise((resolve,reject)=>{const url=URL.createObjectURL(file),im=new Image();im.onload=()=>resolve({im,url});im.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Could not decode this image.'));};im.src=url;});}
+ function canvasBlob(canvas,q){return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('Browser could not create JPG output.')),'image/jpeg',q));}
+ async function convert(){if(busy||!items.length)return;busy=true;convertBtn.disabled=true;clearBtn.disabled=true;const q=Number(quality.value)/100,fill=bg.value;let done=0,failed=0;try{for(const it of items){it.error='';status.textContent='Converting '+(done+failed+1)+' of '+items.length+': '+it.file.name;try{const {im,url}=await loadImage(it.file);const w=im.naturalWidth,h=im.naturalHeight;if(!w||!h)throw new Error('Image dimensions are unavailable.');const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d',{alpha:false});ctx.fillStyle=fill;ctx.fillRect(0,0,w,h);ctx.drawImage(im,0,0,w,h);const blob=await canvasBlob(canvas,q);if(it.outputUrl)URL.revokeObjectURL(it.outputUrl);it.outputBlob=blob;it.outputUrl=URL.createObjectURL(blob);it.width=w;it.height=h;it.status='Completed';URL.revokeObjectURL(url);done++;}catch(e){it.error=e?.message||'Conversion failed';failed++;}render();}status.textContent='Finished: '+done+' converted, '+failed+' failed. Pixel dimensions preserved; JPG quality '+quality.value+'%.';}finally{busy=false;clearBtn.disabled=false;render();}}
+ input.addEventListener('change',e=>{addFiles(e.target.files);input.value='';});drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('dragover');});drop.addEventListener('dragleave',()=>drop.classList.remove('dragover'));drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('dragover');addFiles(e.dataTransfer.files);});quality.addEventListener('input',()=>qualityValue.textContent=quality.value+'%');convertBtn.addEventListener('click',convert);clearBtn.addEventListener('click',()=>{items.forEach(it=>{if(it.previewUrl)URL.revokeObjectURL(it.previewUrl);if(it.outputUrl)URL.revokeObjectURL(it.outputUrl);});items=[];render();status.textContent='Cleared. Add images to begin.';});downloadAllBtn.addEventListener('click',()=>{const ready=items.filter(x=>x.outputBlob);ready.forEach((it,i)=>setTimeout(()=>download(it),i*250));status.textContent='Started downloads for '+ready.length+' JPG image(s). Your browser may ask permission for multiple downloads.';});grid.addEventListener('click',e=>{const dl=e.target.closest('[data-dl]'),rm=e.target.closest('[data-remove]');if(dl)download(items[Number(dl.dataset.dl)]);if(rm){const i=Number(rm.dataset.remove),it=items[i];if(it){if(it.previewUrl)URL.revokeObjectURL(it.previewUrl);if(it.outputUrl)URL.revokeObjectURL(it.outputUrl);items.splice(i,1);render();}}});document.addEventListener('paste',e=>{const active=document.getElementById('jpgConverterPage')?.classList.contains('active');if(!active)return;const files=[];for(const item of (e.clipboardData?.items||[])){if(item.type&&item.type.startsWith('image/')){const f=item.getAsFile();if(f)files.push(f);}}if(files.length){e.preventDefault();addFiles(files);status.textContent='Pasted '+files.length+' image(s) from clipboard.';}});
+})();
+</script>
+
 <script>
 (function(){
   const buttons=[...document.querySelectorAll('.mg-nav-btn')];
@@ -5883,9 +6180,10 @@ Requirements:
     search:document.getElementById('stockSearchPage'),
     imagePrompt:document.getElementById('imageToPromptPage'),
     aiEpsJpg:document.getElementById('aiEpsJpgPage'),
-    backgroundRemover:document.getElementById('backgroundRemoverPage')
+    backgroundRemover:document.getElementById('backgroundRemoverPage'),
+    jpgConverter:document.getElementById('jpgConverterPage')
   };
-  const hashFor={metadata:'stock-metadata',search:'stock-search',imagePrompt:'image-to-prompt',aiEpsJpg:'ai-eps-jpg',backgroundRemover:'background-remover'};
+  const hashFor={metadata:'stock-metadata',search:'stock-search',imagePrompt:'image-to-prompt',aiEpsJpg:'ai-eps-jpg',backgroundRemover:'background-remover',jpgConverter:'jpg-converter'};
   function showPage(name,push=true){
     if(!pages[name]) name='metadata';
     Object.entries(pages).forEach(([k,p])=>p&&p.classList.toggle('active',k===name));
@@ -5904,6 +6202,8 @@ Requirements:
     if(h==='image-to-prompt') return 'imagePrompt';
     if(h==='ai-eps-jpg') return 'aiEpsJpg';
     if(h==='background-remover') return 'backgroundRemover';
+    if(h==='ai-image-upscaler') return 'upscaler';
+    if(h==='jpg-converter') return 'jpgConverter';
     return 'metadata';
   }
   window.addEventListener('popstate',()=>showPage(pageFromHash(location.hash),false));
